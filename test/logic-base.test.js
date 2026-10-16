@@ -43,6 +43,10 @@ test("buildPokedex crea fichas y familias ordenadas por etapa", () => {
     range: 1,
     portrait: "0262",
     variant: false,
+    hp: 190,
+    attack: 19,
+    defense: 8,
+    speDef: 8,
   });
   assert.equal(pokedex.ALOLAN_RATICATE.portrait, "0020/0001");
   assert.equal(pokedex.ABRA.range, 4);

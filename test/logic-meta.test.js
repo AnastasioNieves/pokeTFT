@@ -76,18 +76,6 @@ test("synergyProgress cuenta familias distintas y el umbral activo", () => {
   assert.deepEqual(L.synergyProgress([], pokedex, triggers), []);
 });
 
-test("placementHint usa el alcance de ataque", () => {
-  assert.equal(L.placementHint("ABRA", pokedex), "back");
-  assert.equal(L.placementHint("MIGHTYENA", pokedex), "front");
-  assert.equal(L.placementHint("NOPE", pokedex), "front");
-});
-
-test("placeBoard rellena cada fila desde el centro", () => {
-  const board = L.placeBoard(["MIGHTYENA", "URSARING", "ABRA", "AMBIPOM"], pokedex);
-  assert.deepEqual(board.front, [null, null, "AMBIPOM", "MIGHTYENA", "URSARING", null, null, null]);
-  assert.deepEqual(board.back, [null, null, null, "ABRA", null, null, null, null]);
-});
-
 test("compTitle une las sinergias principales traducidas", () => {
   const t = L.makeTranslator({ synergy: { WILD: "Salvaje", DARK: "Siniestro" } });
   assert.equal(L.compTitle(comps[0], t), "Salvaje · Siniestro");
@@ -116,4 +104,91 @@ test("normalizeComp deja una unidad por familia", () => {
     [["GARCHOMP", 0.7], ["RHYDON", 0.5]]
   );
   assert.deepEqual(comp.units[0].items, ["SOUL_DEW"]);
+});
+
+const TEAM = [
+  { name: "RHYDON", items: [] },
+  { name: "LICKILICKY", items: ["ABILITY_SHIELD"] },
+  { name: "AMBIPOM", items: [] },
+  { name: "GABITE", items: ["GREEN_ORB"] },
+  { name: "URSARING", items: ["DUSK_STONE", "FLAME_ORB"] },
+  { name: "MIGHTYENA", items: [] },
+  { name: "ABRA", items: [] },
+  { name: "NOPE", items: [] },
+];
+
+function cellsOf(entries) {
+  const cells = new Array(24).fill(null);
+  Object.entries(entries).forEach(([i, name]) => {
+    cells[Number(i)] = name;
+  });
+  return cells;
+}
+
+test("suggestBoard aplica las reglas de colocación", () => {
+  const s = L.suggestBoard(TEAM, pokedex);
+  assert.deepEqual(
+    s.cells,
+    cellsOf({ 2: "RHYDON", 3: "GABITE", 4: "LICKILICKY", 5: "AMBIPOM", 16: "URSARING", 19: "ABRA", 23: "MIGHTYENA" })
+  );
+  assert.deepEqual(s.reasons, {
+    RHYDON: ["melee"],
+    LICKILICKY: ["melee", "row_aura:ABILITY_SHIELD"],
+    AMBIPOM: ["melee"],
+    GABITE: ["melee", "around_aura:GREEN_ORB"],
+    URSARING: ["dark_stone"],
+    MIGHTYENA: ["dark"],
+    ABRA: ["ranged"],
+  });
+  assert.deepEqual(s.auras, { LICKILICKY: "row", GABITE: "around" });
+  assert.equal(L.BOARD_SIZE, 24);
+});
+
+test("suggestBoard manda a la fila del medio lo que no cabe", () => {
+  const names = ["RATTATA", "RATICATE", "LICKITUNG", "RHYHORN", "RHYDON", "AIPOM", "TEDDIURSA", "URSARING", "GIBLE"];
+  const s = L.suggestBoard(names.map((name) => ({ name, items: [] })), pokedex);
+  assert.equal(s.cells.slice(0, 8).filter(Boolean).length, 8);
+  assert.equal(s.cells[11], "RATTATA");
+  assert.deepEqual(s.reasons.RATTATA, ["melee", "overflow"]);
+});
+
+test("mergeBoard respeta lo guardado válido y completa con la sugerencia", () => {
+  const m = L.mergeBoard({ RHYDON: 0, ABRA: 21, NOPE: 5, MIGHTYENA: 99 }, TEAM, pokedex);
+  assert.deepEqual(
+    m.cells,
+    cellsOf({ 0: "RHYDON", 3: "GABITE", 4: "LICKILICKY", 5: "AMBIPOM", 16: "URSARING", 21: "ABRA", 23: "MIGHTYENA" })
+  );
+  assert.equal(m.suggested[2], "RHYDON");
+  assert.deepEqual(m.auras, { LICKILICKY: "row", GABITE: "around" });
+  assert.deepEqual(L.mergeBoard(undefined, TEAM, pokedex).cells, L.suggestBoard(TEAM, pokedex).cells);
+});
+
+test("mergeBoard mueve a la casilla libre más cercana si la sugerida está ocupada", () => {
+  const m = L.mergeBoard({ AMBIPOM: 3 }, TEAM, pokedex);
+  assert.equal(m.cells[2], "RHYDON");
+  assert.equal(m.cells[3], "AMBIPOM");
+  assert.equal(m.cells[4], "GABITE");
+  assert.equal(m.cells[5], "LICKILICKY");
+});
+
+test("moveUnit intercambia sin modificar el original", () => {
+  const cells = cellsOf({ 0: "A", 1: "B" });
+  const moved = L.moveUnit(cells, 0, 1);
+  assert.equal(moved[0], "B");
+  assert.equal(moved[1], "A");
+  assert.equal(cells[0], "A");
+  const toEmpty = L.moveUnit(cells, 0, 9);
+  assert.equal(toEmpty[0], null);
+  assert.equal(toEmpty[9], "A");
+});
+
+test("boardToSaved guarda la casilla de cada Pokémon", () => {
+  assert.deepEqual(L.boardToSaved(cellsOf({ 3: "A", 20: "B" })), { A: 3, B: 20 });
+});
+
+test("auraCells devuelve las casillas afectadas", () => {
+  assert.deepEqual(L.auraCells(4, "row"), [3, 5]);
+  assert.deepEqual(L.auraCells(0, "row"), [1]);
+  assert.deepEqual(L.auraCells(3, "around"), [2, 4, 10, 11, 12]);
+  assert.deepEqual(L.auraCells(11, "around"), [2, 3, 4, 10, 12, 18, 19, 20]);
 });

@@ -1,0 +1,45 @@
+[
+  {
+    "cluster_id": "1",
+    "count": 100,
+    "winrate": 40.0,
+    "mean_rank": 2.2,
+    "synergies": { "wild": 9, "dark": 3 },
+    "mean_team": {
+      "pokemons": {
+        "MIGHTYENA": { "frequency": 0.8, "mean_items": 1.0, "items": ["ABILITY_SHIELD"] },
+        "MEWTWO_FAKE": { "frequency": 0.9, "mean_items": 0, "items": [] },
+        "URSARING": { "frequency": 0.6, "mean_items": 2.0, "items": ["DUSK_STONE", "FLAME_ORB"] },
+        "AMBIPOM": { "frequency": 0.5, "mean_items": 0, "items": [] },
+        "RATICATE": { "frequency": 0.2, "mean_items": 0, "items": [] },
+        "ALOLAN_RATICATE": { "frequency": 0.1, "mean_items": 0, "items": [] }
+      }
+    }
+  },
+  {
+    "cluster_id": "2",
+    "count": 80,
+    "winrate": 25.0,
+    "mean_rank": 3.0,
+    "synergies": { "dragon": 3, "ground": 6 },
+    "mean_team": {
+      "pokemons": {
+        "GABITE": { "frequency": 0.9, "mean_items": 1.0, "items": ["WONDER_BOX"] },
+        "RHYDON": { "frequency": 0.7, "mean_items": 3.0, "items": ["MUSCLE_BAND", "SHELL_BELL", "WONDER_BOX"] },
+        "URSARING": { "frequency": 0.3, "mean_items": 0, "items": [] }
+      }
+    }
+  },
+  {
+    "cluster_id": "3",
+    "count": 30,
+    "winrate": 60.0,
+    "mean_rank": 1.5,
+    "synergies": { "psychic": 5 },
+    "mean_team": {
+      "pokemons": {
+        "ALAKAZAM": { "frequency": 1.0, "mean_items": 3.0, "items": ["SOUL_DEW"] }
+      }
+    }
+  }
+]

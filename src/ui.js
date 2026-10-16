@@ -82,7 +82,7 @@
     return Array.from(fams)
       .map((family) => {
         const names = ds.families[family] || [family];
-        const display = names[names.length - 1];
+        const display = logic().finalStage(names, ds.pokedex);
         return {
           family,
           names,

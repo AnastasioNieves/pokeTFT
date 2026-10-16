@@ -56,3 +56,22 @@ test("familyOf devuelve la familia o el propio nombre", () => {
   assert.equal(L.familyOf("URSALUNA", pokedex), "TEDDIURSA");
   assert.equal(L.familyOf("NOPE", pokedex), "NOPE");
 });
+
+test("buildPokedex pone la forma base antes que la alternativa y finalStage la elige", () => {
+  const header =
+    "Index,Name,Category,Tier,Additional pick,Type 1,Type 2,Type 3,Type 4,HP,Attack,Speed,Defense,Special Defense,Attack Range,Max PP,Ability,Family,Family Type 1,Family Type 2,Family Type 3,Family Type 4,Duo,Regional,Nb stages,Variant";
+  const row = (index, name, tier) =>
+    [index, name, "ULTRA", tier, "false", "WILD", "GROUND", "", "", 1, 1, 1, 1, 1, 1, 100, "X", "TEDDIURSA", "", "", "", "", "false", "false", 3, "false"].join(",");
+  const csv = [
+    header,
+    row("0901-0001", "URSALUNA_BLOODMOON", 3),
+    row("0901", "URSALUNA", 3),
+    row("0217", "URSARING", 2),
+    row("0216", "TEDDIURSA", 1),
+  ].join("\n");
+  const { pokedex, families } = L.buildPokedex(L.parseCsv(csv));
+  assert.deepEqual(families.TEDDIURSA, ["TEDDIURSA", "URSARING", "URSALUNA", "URSALUNA_BLOODMOON"]);
+  assert.equal(L.finalStage(families.TEDDIURSA, pokedex), "URSALUNA");
+  assert.equal(L.finalStage(["NOPE", "TEDDIURSA"], pokedex), "TEDDIURSA");
+  assert.equal(L.finalStage([], pokedex), undefined);
+});

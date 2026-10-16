@@ -63,13 +63,31 @@
       (families[fam] = families[fam] || []).push(name);
     });
     Object.keys(families).forEach((fam) => {
-      families[fam].sort((a, b) => pokedex[a].stage - pokedex[b].stage || (a < b ? -1 : 1));
+      families[fam].sort(
+        (a, b) =>
+          pokedex[a].stage - pokedex[b].stage ||
+          pokedex[a].portrait.split("/").length - pokedex[b].portrait.split("/").length ||
+          (a < b ? -1 : 1)
+      );
     });
     return { pokedex, families };
   }
 
   function familyOf(name, pokedex) {
     return pokedex[name] ? pokedex[name].family : name;
+  }
+
+  function finalStage(names, pokedex) {
+    let best;
+    let bestStage = -1;
+    names.forEach((name) => {
+      const stage = pokedex[name] ? pokedex[name].stage : 0;
+      if (stage > bestStage) {
+        best = name;
+        bestStage = stage;
+      }
+    });
+    return best;
   }
 
   function normalizeComp(raw, pokedex) {
@@ -208,6 +226,7 @@
     parseCsv,
     buildPokedex,
     familyOf,
+    finalStage,
     normalizeComp,
     normalizeComps,
     scoreComp,

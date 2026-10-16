@@ -470,7 +470,14 @@
     });
     const again = tally(out);
     comps.forEach((c) => {
-      if (again[out[c.id]] > 1) out[c.id] += " (" + c.id + ")";
+      if (again[out[c.id]] <= 1) return;
+      const carries = compCarries(c, 2);
+      const other = carries[1] || c.units.find((u) => u.name !== (carries[0] && carries[0].name));
+      if (other) out[c.id] += " · con " + t.pkm(other.name);
+    });
+    const last = tally(out);
+    comps.forEach((c) => {
+      if (last[out[c.id]] > 1) out[c.id] += " (" + c.id + ")";
     });
     return out;
   }

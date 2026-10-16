@@ -326,15 +326,27 @@ test("normalizeComps da una clave única a compos con el mismo núcleo", () => {
 });
 
 test("compNames desambigua nombres repetidos", () => {
-  const unit = { name: "URSARING", family: "TEDDIURSA", frequency: 1, items: [], itemCount: 2 };
-  const mk = (id, synergies) => ({ id, synergies, units: [unit] });
+  const ursa = { name: "URSARING", family: "TEDDIURSA", frequency: 1, items: [], itemCount: 2 };
+  const mighty = { name: "MIGHTYENA", family: "POOCHYENA", frequency: 0.9, items: [], itemCount: 1 };
+  const absol = { name: "ABSOL", family: "ABSOL", frequency: 0.8, items: [], itemCount: 0 };
+  const mk = (id, synergies, units) => ({ id, synergies, units });
   const t = L.makeTranslator();
-  const names = L.compNames([mk("a", { WILD: 9, DARK: 3 }), mk("b", { WILD: 9, GROUND: 2 }), mk("c", { WILD: 6, DARK: 3 }), mk("d", { FIRE: 2 })], t);
+  const names = L.compNames(
+    [
+      mk("a", { WILD: 9, DARK: 3 }, [ursa, mighty]),
+      mk("b", { WILD: 9, GROUND: 2 }, [ursa]),
+      mk("c", { WILD: 6, DARK: 3 }, [ursa, absol]),
+      mk("d", { FIRE: 2 }, [ursa]),
+      mk("e", { WILD: 6, DARK: 3 }, [ursa, absol]),
+    ],
+    t
+  );
   assert.deepEqual(names, {
-    a: "Ursaring Wild · Dark (a)",
+    a: "Ursaring Wild · Dark · con Mightyena",
     b: "Ursaring Wild · Ground",
-    c: "Ursaring Wild · Dark (c)",
+    c: "Ursaring Wild · Dark · con Absol (c)",
     d: "Ursaring Fire",
+    e: "Ursaring Wild · Dark · con Absol (e)",
   });
 });
 

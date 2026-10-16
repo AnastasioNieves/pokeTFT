@@ -147,7 +147,8 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); ou
 .brow { display: grid; grid-template-columns: repeat(8, minmax(40px, 1fr)); gap: 4px; }
 .bcell { aspect-ratio: 1; max-width: 100%; min-width: 0; padding: 0; border: 2px dashed var(--line); border-radius: 8px; background: var(--sunk); display: grid; place-items: center; }
 .bcell.filled { border-style: solid; border-color: var(--line); background: var(--surface); cursor: grab; }
-.bcell.moved { border-color: var(--muted); }
+.bcell { position: relative; }
+.bcell.moved::after { content: ""; position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 .bcell.aura { border-style: solid; border-color: var(--good); background: var(--good-soft); }
 .bcell.selected { border-color: var(--accent); background: var(--accent-soft); }
 .bcell .portrait { width: 88%; height: 88%; }

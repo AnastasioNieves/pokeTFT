@@ -68,7 +68,7 @@
     }
     const img = el("img", {
       src: PORTRAIT_BASE + p.portrait + "/Normal.png",
-      alt: label,
+      alt: decorative ? "" : label,
       loading: "lazy",
       width: px,
       height: px,
@@ -249,6 +249,13 @@
     const { core, flex } = L.splitCoreFlex(comp);
     const ownedUnits = core.concat(flex).filter((u) => owned.has(u.family));
     const tab = ui.state.tab === "board" ? "board" : "list";
+    const selectTab = (id) => {
+      ui.state.tab = id;
+      saveState(ui.state);
+      renderDetail(ui);
+      const again = document.getElementById("tab-" + id);
+      if (again) again.focus();
+    };
     const tabs = el(
       "div",
       { class: "tabs", role: "tablist", "aria-label": "Vista de la compo" },
@@ -261,22 +268,22 @@
           role: "tab",
           class: "tab",
           id: "tab-" + id,
+          tabindex: tab === id ? "0" : "-1",
           "aria-selected": tab === id ? "true" : "false",
           "aria-controls": "tab-panel",
           text: label,
-          onclick: () => {
-            ui.state.tab = id;
-            saveState(ui.state);
-            renderDetail(ui);
-            const again = document.getElementById("tab-" + id);
-            if (again) again.focus();
+          onclick: () => selectTab(id),
+          onkeydown: (e) => {
+            if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+            e.preventDefault();
+            selectTab(id === "list" ? "board" : "list");
           },
         })
       )
     );
     const panel = el("div", { id: "tab-panel", role: "tabpanel", "aria-labelledby": "tab-" + tab });
     if (tab === "board") {
-      root.PAC.board.render(panel, { compId: comp.id, units: ownedUnits, ds: ui.ds, el, portrait });
+      root.PAC.board.render(panel, { boardKey: L.compKey(comp), units: ownedUnits, ds: ui.ds, el, portrait });
     } else {
       const listParts = [
         unitSection("Núcleo", core, ui, owned),

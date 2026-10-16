@@ -4,6 +4,7 @@
 
   const BOARDS_KEY = "pac.boards.v1";
   const ROW_NAMES = ["Fila delantera", "Fila del medio", "Fila trasera"];
+  const DRAG_TYPE = "application/x-pac-cell";
   const logic = () => root.PAC.logic;
 
   function loadBoards() {
@@ -52,7 +53,7 @@
   }
 
   function render(container, ctx) {
-    const { compId, units, ds, el, portrait } = ctx;
+    const { boardKey, units, ds, el, portrait } = ctx;
     const L = logic();
     container.replaceChildren();
     if (units.length === 0) {
@@ -60,14 +61,19 @@
       return;
     }
     const boards = loadBoards();
-    const board = L.mergeBoard(boards[compId], units, ds.pokedex);
+    const board = L.mergeBoard(boards[boardKey], units, ds.pokedex);
     let cells = board.cells;
     let selected = null;
 
     function move(from, to) {
       if (from === to) return;
+      const a = cells[from];
+      const b = cells[to];
       cells = L.moveUnit(cells, from, to);
-      boards[compId] = L.boardToSaved(cells);
+      const saved = Object.assign({}, boards[boardKey]);
+      if (a) saved[a] = to;
+      if (b) saved[b] = from;
+      boards[boardKey] = saved;
       saveBoards(boards);
       selected = null;
       draw(to);
@@ -88,27 +94,29 @@
     }
 
     function resetToSuggestion() {
-      delete boards[compId];
+      delete boards[boardKey];
       saveBoards(boards);
       cells = board.suggested.slice();
       selected = null;
-      draw(null);
+      const first = cells.findIndex(Boolean);
+      draw(first === -1 ? null : first);
     }
 
     function draw(focusIndex) {
       container.replaceChildren();
       const cols = L.BOARD_COLS;
+      const savedNames = new Set(Object.keys(boards[boardKey] || {}));
       const highlight = new Set();
       const selectedName = selected !== null ? cells[selected] : null;
       if (selectedName && board.auras[selectedName]) {
         L.auraCells(selected, board.auras[selectedName]).forEach((i) => highlight.add(i));
       }
 
-      const grid = el("div", { class: "bboard", role: "grid", "aria-label": "Tablero de 8 por 3. Arriba está el enemigo." }, [
+      const grid = el("div", { class: "bboard", role: "group", "aria-label": "Tablero de 8 por 3. Arriba está el enemigo." }, [
         el("div", { class: "enemy", text: "▲ Enemigo" }),
       ]);
       ROW_NAMES.forEach((rowName, r) => {
-        const row = el("div", { class: "brow", role: "row", "aria-label": rowName });
+        const row = el("div", { class: "brow", role: "group", "aria-label": rowName });
         for (let c = 0; c < cols; c++) {
           const i = r * cols + c;
           const name = cells[i];
@@ -116,13 +124,12 @@
           if (name) classes.push("filled");
           if (i === selected) classes.push("selected");
           if (highlight.has(i)) classes.push("aura");
-          if (name && board.suggested[i] !== name) classes.push("moved");
+          if (name && savedNames.has(name)) classes.push("moved");
           row.appendChild(
             el(
               "button",
               {
                 type: "button",
-                role: "gridcell",
                 class: classes.join(" "),
                 "data-index": String(i),
                 "aria-label": rowName + ", columna " + (c + 1) + ": " + (name ? ds.t.pkm(name) : "vacía"),
@@ -130,14 +137,15 @@
                 draggable: name ? "true" : null,
                 onclick: () => onCell(i),
                 ondragstart: (e) => {
-                  e.dataTransfer.setData("text/plain", String(i));
+                  e.dataTransfer.setData(DRAG_TYPE, String(i));
                   e.dataTransfer.effectAllowed = "move";
                 },
                 ondragover: (e) => e.preventDefault(),
                 ondrop: (e) => {
                   e.preventDefault();
-                  const from = Number(e.dataTransfer.getData("text/plain"));
-                  if (Number.isInteger(from)) move(from, i);
+                  const raw = e.dataTransfer.getData(DRAG_TYPE);
+                  const from = raw === "" ? NaN : Number(raw);
+                  if (Number.isInteger(from) && from >= 0 && from < L.BOARD_SIZE && cells[from]) move(from, i);
                 },
               },
               name ? [portrait(name, ds, 56)] : []
@@ -147,11 +155,11 @@
         grid.append(el("div", { class: "brow-label", text: rowName, "aria-hidden": "true" }), row);
       });
 
-      const hasSaved = !!boards[compId];
+      const hasSaved = !!boards[boardKey];
       const tools = el("div", { class: "btools" }, [
         el("p", {
           class: "muted small",
-          text: "Arrastra un Pokémon a otra casilla, o haz clic en él y luego en la casilla de destino. Esc cancela.",
+          text: "Arrastra un Pokémon a otra casilla, o haz clic en él y luego en la casilla de destino. Esc cancela. El punto rojo marca los que has movido tú.",
         }),
         hasSaved ? el("button", { type: "button", class: "breset", text: "Volver a la sugerencia", onclick: resetToSuggestion }) : null,
       ]);
@@ -164,7 +172,7 @@
         { class: "breasons" },
         placedNames.map(({ name, i }) => {
           const texts = (board.reasons[name] || []).map((code) => reasonText(code, name, ds)).filter(Boolean);
-          if (board.suggested[i] !== name) texts.push("Lo has colocado tú.");
+          if (savedNames.has(name)) texts.push("Lo has colocado tú.");
           return el("li", { class: "breason" }, [
             portrait(name, ds, 36, true),
             el("div", null, [

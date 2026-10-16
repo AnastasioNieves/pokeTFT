@@ -192,3 +192,9 @@ test("auraCells devuelve las casillas afectadas", () => {
   assert.deepEqual(L.auraCells(3, "around"), [2, 4, 10, 11, 12]);
   assert.deepEqual(L.auraCells(11, "around"), [2, 3, 4, 10, 12, 18, 19, 20]);
 });
+
+test("compKey usa las familias del núcleo", () => {
+  assert.equal(L.compKey(comps[0]), "AIPOM+POOCHYENA+TEDDIURSA");
+  assert.equal(L.compKey(comps[1]), "GIBLE+RHYHORN");
+  assert.equal(L.compKey({ id: "x", units: [{ name: "A", family: "A", frequency: 0.1, items: [] }] }), "comp-x");
+});

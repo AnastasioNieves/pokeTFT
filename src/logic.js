@@ -356,6 +356,12 @@
     return out.sort((a, b) => a - b);
   }
 
+  // Clave estable entre informes: familias del núcleo ordenadas.
+  function compKey(comp) {
+    const families = splitCoreFlex(comp).core.map((u) => u.family).sort();
+    return families.length ? families.join("+") : "comp-" + comp.id;
+  }
+
   function compTitle(comp, t, max) {
     return Object.keys(comp.synergies)
       .slice(0, max || 3)
@@ -385,6 +391,7 @@
     moveUnit,
     boardToSaved,
     auraCells,
+    compKey,
     compTitle,
   };
 

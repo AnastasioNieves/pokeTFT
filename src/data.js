@@ -20,6 +20,12 @@
           mean_rank: c.mean_rank,
           synergies: c.synergies,
           mean_team: { pokemons: (c.mean_team && c.mean_team.pokemons) || {} },
+          mean_items: Array.isArray(c.mean_items) ? c.mean_items : [],
+          top_teams: (Array.isArray(c.top_teams) ? c.top_teams : []).map((tt) => ({
+            rank: tt.rank,
+            elo: tt.elo,
+            pokemons: (Array.isArray(tt.pokemons) ? tt.pokemons : []).map((p) => ({ name: p.name, items: p.items || [] })),
+          })),
         })),
     },
     { key: "metadata", url: GAME + "/meta/metadata", kind: "json" },
@@ -29,7 +35,30 @@
       key: "i18n",
       url: REPO + "/app/public/dist/client/locales/es/translation.json",
       kind: "json",
-      trim: (o) => ({ pkm: (o && o.pkm) || {}, item: (o && o.item) || {}, synergy: (o && o.synergy) || {} }),
+      trim: (o) => {
+        const keep = ["pkm", "item", "synergy", "item_description", "stat", "status", "technical_terms", "damage"];
+        const out = {};
+        keep.forEach((k) => {
+          out[k] = (o && o[k]) || {};
+        });
+        return out;
+      },
+    },
+    {
+      key: "items",
+      url: GAME + "/meta/items",
+      kind: "json",
+      // El informe trae un bloque por rango de Elo; LEVEL_BALL incluye a todos los jugadores.
+      trim: (tiers) => {
+        const all = (Array.isArray(tiers) ? tiers : []).find((t) => t && t.tier === "LEVEL_BALL");
+        const items = (all && all.items) || {};
+        return Object.keys(items).map((k) => ({
+          name: items[k].name || k,
+          rank: Number(items[k].rank) || 0,
+          count: Number(items[k].count) || 0,
+          pokemons: Array.isArray(items[k].pokemons) ? items[k].pokemons.slice(0, 3) : [],
+        }));
+      },
     },
   ];
 
@@ -60,6 +89,7 @@
         triggers: by.triggers.body || {},
         comps: L.normalizeComps(by.comps.body, built.pokedex, { minCount: 50 }),
         t: L.makeTranslator(by.i18n.body),
+        itemStats: L.itemTierList(by.items.body, 200),
       };
     } catch (err) {
       throw new DataError("datos", err, "format");

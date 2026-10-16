@@ -12,6 +12,16 @@ const bodies = {
   triggers: JSON.parse(fixture("triggers.json")),
   pokedex: fixture("pokedex.csv"),
   i18n: { pkm: { MIGHTYENA: "Mightyena" }, item: { DUSK_STONE: "Piedra Noche" }, synergy: { WILD: "Salvaje" }, other: { x: 1 } },
+  items: [
+    {
+      tier: "LEVEL_BALL",
+      items: {
+        DUSK_STONE: { name: "DUSK_STONE", rank: 3.4, count: 500, pokemons: ["URSARING", "A", "B", "C"], count_history: [1] },
+        RARE_THING: { name: "RARE_THING", rank: 2, count: 10, pokemons: [] },
+      },
+    },
+    { tier: "NET_BALL", items: {} },
+  ],
 };
 
 function fakeFetch(opts) {
@@ -41,11 +51,11 @@ function memoryStorage() {
   };
 }
 
-test("primera carga descarga las 5 fuentes y construye el Dataset", async () => {
+test("primera carga descarga las 6 fuentes y construye el Dataset", async () => {
   const fetch = fakeFetch();
   const storage = memoryStorage();
   const ds = await D.createLoader({ fetch, storage, now: () => 0 }).load();
-  assert.equal(fetch.calls.length, 5);
+  assert.equal(fetch.calls.length, 6);
   assert.equal(ds.reportDate, "2026-10-15");
   assert.equal(ds.stale, false);
   assert.deepEqual(ds.comps.map((c) => c.id), ["1", "2"]);
@@ -57,10 +67,12 @@ test("primera carga descarga las 5 fuentes y construye el Dataset", async () => 
   assert.deepEqual(storage.keys(), [
     "pac.cache.v1.comps",
     "pac.cache.v1.i18n",
+    "pac.cache.v1.items",
     "pac.cache.v1.metadata",
     "pac.cache.v1.pokedex",
     "pac.cache.v1.triggers",
   ]);
+  assert.deepEqual(ds.itemStats, [{ name: "DUSK_STONE", rank: 3.4, count: 500, pokemons: ["URSARING", "A", "B"] }]);
 });
 
 test("la caché recorta campos que no se usan", async () => {
@@ -71,7 +83,18 @@ test("la caché recorta campos que no se usan", async () => {
   assert.equal(comps[0].x, undefined);
   assert.equal(comps[0].cluster_id, "1");
   const i18n = JSON.parse(storage.getItem("pac.cache.v1.i18n")).body;
-  assert.deepEqual(Object.keys(i18n).sort(), ["item", "pkm", "synergy"]);
+  assert.deepEqual(Object.keys(i18n).sort(), [
+    "damage",
+    "item",
+    "item_description",
+    "pkm",
+    "stat",
+    "status",
+    "synergy",
+    "technical_terms",
+  ]);
+  assert.deepEqual(comps[0].top_teams, []);
+  assert.deepEqual(comps[0].mean_items, []);
 });
 
 test("antes de 24 h usa la caché sin descargar", async () => {
@@ -89,7 +112,7 @@ test("force descarga aunque la caché sea reciente", async () => {
   await D.createLoader({ fetch: fakeFetch(), storage, now: () => 0 }).load();
   const fetch2 = fakeFetch();
   await D.createLoader({ fetch: fetch2, storage, now: () => HOUR }).load({ force: true });
-  assert.equal(fetch2.calls.length, 5);
+  assert.equal(fetch2.calls.length, 6);
 });
 
 test("sin conexión y con caché vieja devuelve datos marcados como stale", async () => {

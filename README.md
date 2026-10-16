@@ -72,7 +72,22 @@ La pantalla tiene tres columnas. Se usan de izquierda a derecha:
 - **Comprar (sale como …)**: te falta. Entre paréntesis, el nombre con el que sale en la tienda. Por ejemplo, Mightyena sale como **Poochyena**.
 - Debajo de cada Pokémon salen los **objetos** que más usan los jugadores con él.
 - **Sinergias con lo que tienes**: por ejemplo *Salvaje 3 / 9*. Los números en verde son los niveles que ya tienes activos, y el que tiene borde rojo es el objetivo de la compo.
-- **Colocación orientativa**: un tablero con tus Pokémon. Los de cuerpo a cuerpo van delante y los de ataque a distancia, detrás. Es una sugerencia, porque las estadísticas no dicen dónde los coloca la gente.
+- Arriba de esta columna hay dos pestañas: **Lista** (lo anterior) y **Tablero**.
+
+### Paso 3b · Coloca a tus Pokémon (pestaña «Tablero»)
+
+- Pulsa la pestaña **Tablero** en la columna derecha. Verás el tablero del juego (8 × 3), con el enemigo arriba.
+- La app coloca a los Pokémon que has marcado siguiendo cómo funciona el juego:
+  - los de **cuerpo a cuerpo**, delante (los más resistentes, en el centro);
+  - los que atacan **a distancia**, detrás;
+  - los **Siniestros** cuerpo a cuerpo (o con **Piedra Noche**), atrás en las esquinas, porque saltan solos al enemigo más lejano;
+  - quien lleva **Escudo Habilidad** o **Gracídea**, en el centro de su fila, porque ayudan a los de al lado.
+- Debajo del tablero, cada Pokémon tiene una frase que explica **por qué** va ahí.
+- **Para moverlos:** arrástralos a otra casilla, o haz clic en uno y luego en la casilla de destino. Si la casilla está ocupada, se intercambian.
+- Al seleccionar a quien lleva un objeto de ese tipo, se **iluminan en verde** las casillas a las que afecta.
+- Tus cambios se guardan para esa compo. **Volver a la sugerencia** los deshace.
+
+> Es una sugerencia: el juego no publica dónde coloca la gente a cada Pokémon.
 
 ### Paso 4 · Nueva partida
 

@@ -10,11 +10,13 @@
   function loadState() {
     try {
       const s = JSON.parse(root.localStorage.getItem(STATE_KEY));
-      if (s && Array.isArray(s.owned)) return { owned: s.owned, compId: s.compId || null };
+      if (s && Array.isArray(s.owned)) {
+        return { owned: s.owned, compId: s.compId || null, tab: s.tab === "board" ? "board" : "list" };
+      }
     } catch (e) {
       // Sin almacenamiento: empezamos vacíos.
     }
-    return { owned: [], compId: null };
+    return { owned: [], compId: null, tab: "list" };
   }
 
   function saveState(state) {
@@ -246,15 +248,49 @@
     const owned = new Set(ui.state.owned);
     const { core, flex } = L.splitCoreFlex(comp);
     const ownedUnits = core.concat(flex).filter((u) => owned.has(u.family));
-    const parts = [
+    const tab = ui.state.tab === "board" ? "board" : "list";
+    const tabs = el(
+      "div",
+      { class: "tabs", role: "tablist", "aria-label": "Vista de la compo" },
+      [
+        ["list", "Lista"],
+        ["board", "Tablero"],
+      ].map(([id, label]) =>
+        el("button", {
+          type: "button",
+          role: "tab",
+          class: "tab",
+          id: "tab-" + id,
+          "aria-selected": tab === id ? "true" : "false",
+          "aria-controls": "tab-panel",
+          text: label,
+          onclick: () => {
+            ui.state.tab = id;
+            saveState(ui.state);
+            renderDetail(ui);
+            const again = document.getElementById("tab-" + id);
+            if (again) again.focus();
+          },
+        })
+      )
+    );
+    const panel = el("div", { id: "tab-panel", role: "tabpanel", "aria-labelledby": "tab-" + tab });
+    if (tab === "board") {
+      root.PAC.board.render(panel, { compId: comp.id, units: ownedUnits, ds: ui.ds, el, portrait });
+    } else {
+      const listParts = [
+        unitSection("Núcleo", core, ui, owned),
+        flex.length ? unitSection("Relleno", flex, ui, owned) : null,
+        synergySection(comp, ownedUnits, ui),
+      ];
+      panel.append(...listParts.filter(Boolean));
+    }
+    box.append(
       el("h3", { class: "comp-title", text: L.compTitle(comp, ui.ds.t) }),
       el("p", { class: "muted", text: compStats(comp, L.scoreComp(comp, owned).match, owned.size > 0) }),
-      unitSection("Núcleo", core, ui, owned),
-      flex.length ? unitSection("Relleno", flex, ui, owned) : null,
-      synergySection(comp, ownedUnits, ui),
-      boardSection(ownedUnits, ui),
-    ];
-    box.append(...parts.filter(Boolean));
+      tabs,
+      panel
+    );
   }
 
   function unitSection(title, units, ui, owned) {
@@ -320,31 +356,6 @@
     return el("section", { class: "block" }, [
       el("h4", { text: "Sinergias con lo que tienes" }),
       el("ul", { class: "syns" }, rows),
-    ]);
-  }
-
-  function boardSection(ownedUnits, ui) {
-    const ds = ui.ds;
-    if (ownedUnits.length === 0) {
-      return el("section", { class: "block" }, [
-        el("h4", { text: "Colocación orientativa" }),
-        el("p", { class: "muted", text: "Marca Pokémon de esta compo para ver una colocación." }),
-      ]);
-    }
-    const board = logic().placeBoard(ownedUnits.map((u) => u.name), ds.pokedex);
-    const cell = (name) => el("div", { class: "cell" }, name ? [portrait(name, ds, 36)] : []);
-    return el("section", { class: "block" }, [
-      el("h4", { text: "Colocación orientativa" }),
-      el("div", { class: "board", role: "img", "aria-label": "Tablero con " + ownedUnits.length + " Pokémon colocados" }, [
-        el("div", { class: "enemy", text: "▲ Enemigo" }),
-        el("div", { class: "row" }, board.front.map(cell)),
-        el("div", { class: "row" }, new Array(8).fill(null).map(cell)),
-        el("div", { class: "row" }, board.back.map(cell)),
-      ]),
-      el("p", {
-        class: "muted small",
-        text: "Cuerpo a cuerpo delante y a distancia detrás. El informe no dice dónde los coloca la gente.",
-      }),
     ]);
   }
 

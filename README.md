@@ -1,12 +1,11 @@
 # Compañero Auto Chess
 
-Una ayuda para jugar a [Pokémon Auto Chess](https://pokemon-auto-chess.com). La abres en una ventana aparte (lo ideal es un segundo monitor), marcas los Pokémon que tienes y te dice:
+Una guía al estilo de las webs de TFT (como Mobalytics) para [Pokémon Auto Chess](https://pokemon-auto-chess.com). La abres en una ventana aparte (lo ideal es un segundo monitor) y te muestra:
 
-- **qué equipo (compo) te conviene** según el meta actual;
-- **qué Pokémon te faltan por comprar**;
-- **qué objetos darle a cada uno**;
-- **cuánto te falta para activar cada sinergia**;
-- **dónde colocarlos** en el tablero (de forma orientativa).
+- la **tier list de compos** del meta actual (S, A, B y C);
+- la **página de cada compo**: tablero final, carries y sus objetos, cómo jugarla y equipos reales que quedaron 1.º;
+- **Mi partida**: marcas lo que tienes y te dice qué compo seguir, qué comprar y cómo colocar;
+- la **tier list de objetos**, con lo que hace cada uno.
 
 No hay que instalar nada. Es una página web que se abre con doble clic.
 
@@ -30,95 +29,69 @@ git clone https://github.com/AnastasioNieves/pokeTFT.git
 ## 2. Abrirla
 
 1. Entra en la carpeta y haz **doble clic en `index.html`**. Se abrirá en tu navegador (Chrome, Edge o Firefox).
-2. Espera unos segundos mientras sale *"Cargando datos del meta…"*. La primera vez necesita **internet** para descargar las estadísticas.
+2. Espera unos segundos mientras sale *"Cargando datos del meta…"*. La primera vez necesita **internet**.
 3. Arrastra la ventana a tu **segundo monitor**, o ponla al lado del juego.
 
 > Consejo: guarda `index.html` en los marcadores del navegador para abrirla en un clic.
 
-## 3. Usarla durante la partida
+## 3. Cómo se usa
 
-La pantalla tiene tres columnas. Se usan de izquierda a derecha:
+Arriba hay tres pestañas: **Tier list**, **Mi partida** y **Objetos**.
 
-```
-┌──────────────┬──────────────────┬────────────────────┐
-│ MIS POKÉMON  │ COMPOS SUGERIDAS │ MI COMPO           │
-│ marca lo que │ elige el equipo  │ qué comprar, qué   │
-│ tienes       │ que más te encaja│ objetos y dónde    │
-└──────────────┴──────────────────┴────────────────────┘
-```
+### Tier list: elige qué jugar
 
-### Paso 1 · Marca tus Pokémon (columna izquierda)
+- A la izquierda están todas las compos, agrupadas en **S** (las mejores), **A**, **B** y **C** según el puesto medio en que acaban. Cada fila muestra:
+  - el **nombre** de la compo: su carry y su sinergia principal, por ejemplo *Ursaring Salvaje*;
+  - las **sinergias** con su icono y el número que lleva. El color indica el nivel que alcanza: bronce, plata u oro;
+  - sus **Pokémon**: el color del borde es su rareza (gris común, verde poco común, azul raro, morado épico, rojo ultra, dorado legendario…). Encima de los carries salen sus objetos;
+  - el **puesto medio** (de 8; cuanto más bajo, mejor) y el **% de veces que queda 1.º**.
+- **Buscar Pokémon:** escribe un nombre (por ejemplo `pooch`) para ver solo las compos que lo usan.
+- **Filtrar por sinergia:** haz clic en los iconos de sinergia de arriba. Si activas varios, solo quedan las compos que las tienen todas.
+- Haz clic en una compo para abrir su guía a la derecha.
 
-- Haz **clic** en cada Pokémon que tengas en el banquillo o en el tablero. Se pone **en verde**.
-- Usa el **buscador** de arriba para encontrarlos rápido. Puedes escribir sin tildes, y valen trozos del nombre: con `mighty` aparece Mightyena.
-- Da igual la evolución: si tienes un **Poochyena**, marca la ficha de **Mightyena**. Cada ficha cuenta para toda la familia.
-- Para **desmarcar** uno, vuelve a hacer clic en su ficha o pulsa la **✕** de su etiqueta, arriba.
+### La guía de una compo
 
-### Paso 2 · Elige una compo (columna central)
+- **Tablero final:** dónde va cada Pokémon, con sus objetos encima. Pasa el ratón por uno para ver por qué va ahí. Puedes **recolocarlos** arrastrando, o con un clic en el Pokémon y otro en la casilla. Tus cambios se guardan y **Volver a la sugerencia** los deshace.
+- **Carries y sus objetos:** los Pokémon que más objetos llevan y cuáles. Pasa el ratón por un objeto para leer qué hace.
+- **Cómo jugarla:** qué Pokémon buscar al **inicio**, a **mitad** y al **final** de la partida (con el nombre con el que salen en la tienda), y un consejo para empezar.
+- **Equipos reales:** equipos de jugadores que ganaron con esta compo, con su Elo y sus objetos.
+- **Seguir en Mi partida:** te lleva a Mi partida con esta compo elegida.
 
-- Aparecen las **5 compos** que mejor encajan con lo que has marcado.
-- Si aún no has marcado nada, verás las 5 mejores del meta.
-- Cada compo muestra:
-  - **Coincide 43 %**: cuánto de esa compo ya tienes.
-  - **Puesto 2,20**: puesto medio en que acaba (de 8). Cuanto más bajo, mejor.
-  - **Gana 38 %**: cuántas partidas gana.
-  - **104 partidas**: cuántas partidas hay detrás del dato.
-- Haz **clic** en la que quieras seguir. Puedes cambiar de compo cuando quieras.
+### Mi partida: sigue tu compo mientras juegas
 
-### Paso 3 · Sigue la compo (columna derecha)
+1. A la izquierda, haz **clic en los Pokémon que tengas** (se ponen en verde). Usa el buscador para ir rápido. Si tienes un Poochyena, marca Mightyena: cada ficha cuenta para toda la familia.
+2. A la derecha verás las **5 compos que mejor te encajan**, con el % que ya tienes. Elige una.
+3. Debajo te dice:
+   - **Te falta comprar:** con el nombre con el que salen en la tienda. Las del **Núcleo** son las imprescindibles.
+   - **Tus sinergias:** cuántas llevas de cada una y qué niveles tienes activos (en verde).
+   - **Coloca lo que tienes:** el tablero con tus Pokémon, editable igual que el de la guía.
+4. Al empezar otra partida, pulsa **Nueva partida**.
 
-- **Núcleo**: los Pokémon imprescindibles. **Relleno**: los que completan el equipo.
-- **✔ La tienes**: ya lo tienes.
-- **Comprar (sale como …)**: te falta. Entre paréntesis, el nombre con el que sale en la tienda. Por ejemplo, Mightyena sale como **Poochyena**.
-- Debajo de cada Pokémon salen los **objetos** que más usan los jugadores con él.
-- **Sinergias con lo que tienes**: por ejemplo *Salvaje 3 / 9*. Los números en verde son los niveles que ya tienes activos, y el que tiene borde rojo es el objetivo de la compo.
-- Arriba de esta columna hay dos pestañas: **Lista** (lo anterior) y **Tablero**.
+### Objetos
 
-### Paso 3b · Coloca a tus Pokémon (pestaña «Tablero»)
-
-- Pulsa la pestaña **Tablero** en la columna derecha. Verás el tablero del juego (8 × 3), con el enemigo arriba.
-- La app coloca a los Pokémon que has marcado siguiendo cómo funciona el juego:
-  - los de **cuerpo a cuerpo**, delante (los más resistentes, en el centro);
-  - los que atacan **a distancia**, detrás;
-  - los **Siniestros** cuerpo a cuerpo (o con **Piedra Noche**), atrás en las esquinas, porque saltan solos al enemigo más lejano;
-  - quien lleva **Escudo Habilidad** o **Gracídea**, en el centro de su fila, porque ayudan a los de al lado.
-- Debajo del tablero, cada Pokémon tiene una frase que explica **por qué** va ahí.
-- **Para moverlos:** arrástralos a otra casilla, o haz clic en uno y luego en la casilla de destino. Si la casilla está ocupada, se intercambian.
-- Al seleccionar a quien lleva un objeto de ese tipo, se **iluminan en verde** las casillas a las que afecta.
-- Tus cambios se guardan para esa compo. **Volver a la sugerencia** los deshace.
-
-> Es una sugerencia: el juego no publica dónde coloca la gente a cada Pokémon.
-
-### Paso 4 · Nueva partida
-
-Al empezar otra partida, pulsa **Nueva partida** (arriba a la derecha). Se borra todo lo marcado.
-
-> Lo que marques se guarda en tu navegador. Si cierras la ventana a mitad de partida y la vuelves a abrir, sigue ahí.
+La tier list de objetos: qué hace cada uno, el puesto medio de quien lo lleva, cuántas veces se usa y en qué Pokémon. Puedes buscar por nombre.
 
 ---
 
 ## Preguntas frecuentes
 
 **¿De dónde salen los datos? ¿Están actualizados?**
-Del informe público del meta que publica el propio juego, que se renueva cada día. La fecha aparece arriba (*"Informe del 15/10/2026"*). La app los descarga como mucho **una vez al día**. Si quieres los más recientes ya, pulsa **Actualizar datos**.
+Del informe público del meta que publica el propio juego cada día. La fecha aparece arriba. La app los descarga como mucho **una vez al día**; **Actualizar datos** fuerza la descarga.
 
 **Sale "No se pudieron descargar los datos".**
-Comprueba tu conexión a internet y pulsa **Reintentar**. Solo hace falta conexión la primera vez y una vez al día.
+Comprueba tu conexión a internet y pulsa **Reintentar**.
 
 **Sale "Sin conexión: usando datos del …".**
-No hay internet, pero la app usa la última copia que descargó. Funciona igual, con datos algo más viejos.
+No hay internet, pero la app usa la última copia que descargó.
 
 **Sale "formato inesperado".**
-El juego probablemente ha cambiado cómo publica sus datos. Prueba más tarde con **Reintentar** y, si sigue, [abre un aviso (issue)](https://github.com/AnastasioNieves/pokeTFT/issues).
+El juego probablemente ha cambiado cómo publica sus datos. Prueba más tarde y, si sigue, [abre un aviso (issue)](https://github.com/AnastasioNieves/pokeTFT/issues).
 
-**Un Pokémon sale con letras en vez de imagen.**
-No se ha encontrado su retrato. Es solo estético y no afecta a nada.
+**Un Pokémon u objeto sale sin imagen.**
+No se encontró su imagen. Es solo estético.
 
-**No encuentro un Pokémon en la lista.**
-Solo aparecen los Pokémon que salen en alguna compo del meta. Si no está, ninguna compo fuerte lo usa ahora mismo.
-
-**¿Funciona en el móvil?**
-Sí: en pantallas estrechas las tres columnas se ponen una debajo de otra. Pero está pensada para un monitor de ordenador.
+**¿La colocación del tablero es la que usa la gente?**
+No: el informe no dice dónde coloca la gente a cada Pokémon. Es una sugerencia basada en cómo funcionan las sinergias y los objetos, y puedes cambiarla.
 
 ---
 
@@ -131,7 +104,7 @@ Los [Términos de Servicio de Pokémon Auto Chess](https://pokemon-auto-chess.co
 - **no** mete nada en la página del juego (no es una extensión);
 - **no** hace clics ni pulsa teclas por ti;
 - **no** usa tu cuenta ni tu sesión;
-- **solo** descarga datos públicos sin identificarse: el informe del meta que el propio juego publica para cualquiera y los datos de su código abierto.
+- **solo** descarga datos públicos sin identificarse: el informe del meta que el propio juego publica para cualquiera y los datos e imágenes de su código abierto.
 
 Es una herramienta no oficial hecha por fans, sin relación con los creadores del juego. Pokémon y sus personajes pertenecen a sus respectivos dueños.
 
@@ -143,13 +116,16 @@ HTML, CSS y JavaScript sin dependencias ni compilación. Los scripts son clásic
 
 | Archivo | Qué hace |
 |---|---|
-| `index.html`, `styles.css` | Estructura y estilos (tema claro y oscuro) |
-| `src/logic.js` | Funciones puras: compos, puntuación, sinergias, tablero |
+| `index.html`, `styles.css` | Estructura y estilos (oscuro por defecto, claro si el sistema lo pide) |
+| `src/logic.js` | Funciones puras: compos, tiers, sinergias, tablero, textos |
 | `src/data.js` | Descarga, caché de 24 h y modo sin conexión |
-| `src/ui.js`, `src/main.js` | Interfaz y arranque |
+| `src/dom.js` | Piezas visuales: retratos, objetos, insignias |
+| `src/app.js`, `src/main.js` | Pestañas, rutas y arranque |
+| `src/views/` | Tier list, página de compo, Mi partida y Objetos |
+| `src/board.js` | Tablero editable |
 | `test/` | Pruebas con `node:test` |
 | `guides/` | Guía visual de la compo Salvaje/Siniestro |
-| `docs/` | Diseño y plan de implementación |
+| `docs/` | Diseños y planes |
 
 Para ejecutar las pruebas (Node 22 o superior):
 
@@ -158,6 +134,6 @@ node --test "test/*.test.js"
 ```
 
 **Fuentes de datos:**
-- De pokemon-auto-chess.com: `/meta-v2`, `/meta/metadata` y `/types-trigger`.
-- Del repositorio [keldaanCommunity/pokemonAutoChess](https://github.com/keldaanCommunity/pokemonAutoChess): `pokemons-data.csv` y la traducción al español.
+- De pokemon-auto-chess.com: `/meta-v2`, `/meta/items`, `/meta/metadata` y `/types-trigger`.
+- Del repositorio [keldaanCommunity/pokemonAutoChess](https://github.com/keldaanCommunity/pokemonAutoChess): `pokemons-data.csv`, la traducción al español y los iconos de objetos y sinergias.
 - Retratos de [PMD Sprite Collab](https://sprites.pmdcollab.org/).

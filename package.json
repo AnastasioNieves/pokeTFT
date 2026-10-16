@@ -1,0 +1,8 @@
+{
+  "name": "companero-auto-chess",
+  "private": true,
+  "description": "Ayuda manual para Pokémon Auto Chess. No lee ni modifica el juego.",
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  }
+}

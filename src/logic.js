@@ -11,6 +11,31 @@
       .join(" ");
   }
 
+  // Secciones del diccionario del juego donde buscar los términos en MAYÚSCULAS de las descripciones.
+  const TOKEN_SECTIONS = ["stat", "status", "technical_terms", "synergy", "damage"];
+
+  function cleanText(text, i18n) {
+    const src = i18n || {};
+    return String(text || "")
+      .replace(/\{\{[^}]*\}\}/g, "")
+      .replace(/\[([^\]]*)\]/g, (match, inner) =>
+        inner
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => /^-?\d+(\.\d+)?$/.test(s))
+          .join("/")
+      )
+      .replace(/\b[A-Z][A-Z_]+\b/g, (token) => {
+        for (const section of TOKEN_SECTIONS) {
+          const table = src[section];
+          if (table && typeof table[token] === "string") return table[token].trim().toLowerCase();
+        }
+        return token;
+      })
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  }
+
   function makeTranslator(i18n) {
     const src = i18n || {};
     const section = (name) => (key) => {
@@ -18,7 +43,12 @@
       const value = table && table[key];
       return typeof value === "string" && value ? value : humanize(key);
     };
-    return { pkm: section("pkm"), item: section("item"), synergy: section("synergy") };
+    const itemDesc = (key) => {
+      const table = src.item_description;
+      const value = table && table[key];
+      return typeof value === "string" ? cleanText(value, src) : "";
+    };
+    return { pkm: section("pkm"), item: section("item"), synergy: section("synergy"), itemDesc };
   }
 
   function normalizeSearch(text) {
@@ -118,6 +148,7 @@
           family: pokedex[name].family,
           frequency: Number(mons[name].frequency) || 0,
           items: Array.isArray(mons[name].items) ? mons[name].items.slice() : [],
+          itemCount: Number(mons[name].mean_items) || 0,
         };
         const prev = byFamily[unit.family];
         if (
@@ -138,6 +169,18 @@
       meanRank: Number(raw.mean_rank) || 8,
       synergies,
       units,
+      items: (Array.isArray(raw.mean_items) ? raw.mean_items : [])
+        .filter((x) => x && x.item)
+        .map((x) => ({ item: x.item, frequency: Number(x.frequency) || 0 })),
+      topTeams: (Array.isArray(raw.top_teams) ? raw.top_teams : [])
+        .map((team) => ({
+          rank: Number(team.rank) || 0,
+          elo: Number(team.elo) || 0,
+          units: (Array.isArray(team.pokemons) ? team.pokemons : [])
+            .filter((p) => p && pokedex[p.name])
+            .map((p) => ({ name: p.name, items: Array.isArray(p.items) ? p.items.slice() : [] })),
+        }))
+        .filter((team) => team.units.length > 0),
     };
   }
 
@@ -362,6 +405,100 @@
     return families.length ? families.join("+") : "comp-" + comp.id;
   }
 
+  function compTier(comp) {
+    if (comp.meanRank <= 3.3) return "S";
+    if (comp.meanRank <= 3.7) return "A";
+    if (comp.meanRank <= 4.2) return "B";
+    return "C";
+  }
+
+  function compCarries(comp, max) {
+    const limit = max || 2;
+    const withItems = comp.units
+      .filter((u) => u.itemCount >= 1)
+      .sort((a, b) => b.itemCount - a.itemCount || b.frequency - a.frequency);
+    return (withItems.length ? withItems : comp.units.slice(0, 1)).slice(0, limit);
+  }
+
+  function compName(comp, t) {
+    const carry = compCarries(comp, 1)[0];
+    if (!carry) return compTitle(comp, t, 2);
+    const first = Object.keys(comp.synergies)[0];
+    return first ? t.pkm(carry.name) + " " + t.synergy(first) : t.pkm(carry.name);
+  }
+
+  function synergyLevel(count, thresholds) {
+    const list = thresholds || [];
+    const reached = list.filter((x) => count >= x).length;
+    if (reached === 0) return 0;
+    if (reached === list.length) return 3;
+    return reached >= Math.ceil(list.length / 2) ? 2 : 1;
+  }
+
+  const STAGE_OF_RARITY = {
+    COMMON: "early",
+    UNCOMMON: "early",
+    RARE: "mid",
+    EPIC: "mid",
+    HATCH: "mid",
+    SPECIAL: "mid",
+    ULTRA: "late",
+    UNIQUE: "late",
+    LEGENDARY: "late",
+  };
+
+  function stageGroups(comp, pokedex, families) {
+    const groups = { early: [], mid: [], late: [] };
+    const { core, flex } = splitCoreFlex(comp);
+    core.concat(flex).forEach((u) => {
+      const base = (families[u.family] || [u.name])[0];
+      const p = pokedex[u.name];
+      const stage = STAGE_OF_RARITY[p ? p.rarity : ""] || "mid";
+      if (!groups[stage].includes(base)) groups[stage].push(base);
+    });
+    return groups;
+  }
+
+  function playTip(comp, triggers, t) {
+    const types = Object.keys(comp.synergies || {});
+    if (types.length === 0) return "";
+    const first = types[0];
+    const firstThreshold = ((triggers && triggers[first]) || [])[0];
+    const goal = types
+      .slice(0, 2)
+      .map((type) => t.synergy(type) + " " + comp.synergies[type])
+      .join(" + ");
+    const start = firstThreshold ? "Consigue " + firstThreshold + " de " + t.synergy(first) + " pronto para activarla. " : "";
+    return start + "Objetivo: " + goal + ".";
+  }
+
+  function filterComps(comps, filters, families, t) {
+    const query = normalizeSearch((filters && filters.query) || "");
+    const wanted = Array.from((filters && filters.synergies) || []);
+    return comps.filter((comp) => {
+      if (!wanted.every((type) => comp.synergies[type] > 0)) return false;
+      if (!query) return true;
+      return comp.units.some((u) =>
+        (families[u.family] || [u.name]).some((name) => normalizeSearch(t.pkm(name)).includes(query))
+      );
+    });
+  }
+
+  function itemTierList(items, minCount) {
+    const min = minCount != null ? minCount : 200;
+    return (items || [])
+      .filter((x) => x && x.count >= min)
+      .slice()
+      .sort((a, b) => a.rank - b.rank || b.count - a.count);
+  }
+
+  function itemTier(rank) {
+    if (rank <= 3.5) return "S";
+    if (rank <= 3.8) return "A";
+    if (rank <= 4.1) return "B";
+    return "C";
+  }
+
   function compTitle(comp, t, max) {
     return Object.keys(comp.synergies)
       .slice(0, max || 3)
@@ -392,6 +529,16 @@
     boardToSaved,
     auraCells,
     compKey,
+    compTier,
+    compCarries,
+    compName,
+    synergyLevel,
+    stageGroups,
+    playTip,
+    filterComps,
+    cleanText,
+    itemTierList,
+    itemTier,
     compTitle,
   };
 

@@ -93,3 +93,13 @@ test("buildPokedex convierte todos los guiones del índice y marca variantes", (
   assert.equal(pokedex.HOOPA.variant, false);
   assert.equal(L.finalStage(families.HOOPA, pokedex), "HOOPA");
 });
+
+test("makeTranslator.itemDesc devuelve la descripción limpia", () => {
+  const t = L.makeTranslator({
+    item_description: { GRACIDEA_FLOWER: "El portador gana +20 SPEED." },
+    stat: { SPEED: "Velocidad" },
+  });
+  assert.equal(t.itemDesc("GRACIDEA_FLOWER"), "El portador gana +20 velocidad.");
+  assert.equal(t.itemDesc("NOPE"), "");
+  assert.equal(L.makeTranslator().itemDesc("NOPE"), "");
+});

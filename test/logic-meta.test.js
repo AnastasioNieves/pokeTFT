@@ -26,6 +26,7 @@ test("normalizeComps filtra por count y normaliza", () => {
     family: "TEDDIURSA",
     frequency: 0.6,
     items: ["DUSK_STONE", "FLAME_ORB"],
+    itemCount: 2,
   });
   assert.equal(L.normalizeComps(rawComps, pokedex, { minCount: 0 }).length, 3);
 });
@@ -197,4 +198,116 @@ test("compKey usa las familias del núcleo", () => {
   assert.equal(L.compKey(comps[0]), "AIPOM+POOCHYENA+TEDDIURSA");
   assert.equal(L.compKey(comps[1]), "GIBLE+RHYHORN");
   assert.equal(L.compKey({ id: "x", units: [{ name: "A", family: "A", frequency: 0.1, items: [] }] }), "comp-x");
+});
+
+const { families } = L.buildPokedex(L.parseCsv(fixture("pokedex.csv")));
+const tEs = L.makeTranslator({ synergy: { WILD: "Salvaje", DARK: "Siniestro", GROUND: "Tierra" } });
+
+test("normalizeComp guarda objetos de la compo y equipos reales", () => {
+  const raw = {
+    cluster_id: "7",
+    count: 60,
+    winrate: 30,
+    mean_rank: 3,
+    synergies: { wild: 2 },
+    mean_items: [{ item: "DUSK_STONE", frequency: 0.15 }, { frequency: 0.1 }],
+    top_teams: [
+      { rank: 1, elo: 1200, pokemons: [{ name: "URSARING", items: ["FLAME_ORB"] }, { name: "NOPE", items: [] }] },
+      { rank: 2, elo: 900, pokemons: [{ name: "NOPE", items: [] }] },
+    ],
+    mean_team: { pokemons: { URSARING: { frequency: 1, mean_items: 2.5, items: ["FLAME_ORB"] } } },
+  };
+  const comp = L.normalizeComp(raw, pokedex);
+  assert.equal(comp.units[0].itemCount, 2.5);
+  assert.deepEqual(comp.items, [{ item: "DUSK_STONE", frequency: 0.15 }]);
+  assert.deepEqual(comp.topTeams, [{ rank: 1, elo: 1200, units: [{ name: "URSARING", items: ["FLAME_ORB"] }] }]);
+  assert.deepEqual(comps[0].items, []);
+  assert.deepEqual(comps[0].topTeams, []);
+});
+
+test("compTier agrupa por puesto medio", () => {
+  assert.equal(L.compTier({ meanRank: 2.2 }), "S");
+  assert.equal(L.compTier({ meanRank: 3.3 }), "S");
+  assert.equal(L.compTier({ meanRank: 3.5 }), "A");
+  assert.equal(L.compTier({ meanRank: 4.0 }), "B");
+  assert.equal(L.compTier({ meanRank: 4.5 }), "C");
+});
+
+test("compCarries y compName usan las unidades con más objetos", () => {
+  const comp = {
+    id: "x",
+    synergies: { WILD: 9, DARK: 3 },
+    units: [
+      { name: "MIGHTYENA", family: "POOCHYENA", frequency: 0.8, items: [], itemCount: 1 },
+      { name: "URSARING", family: "TEDDIURSA", frequency: 0.6, items: [], itemCount: 2.5 },
+      { name: "AMBIPOM", family: "AIPOM", frequency: 0.5, items: [], itemCount: 0.2 },
+    ],
+  };
+  assert.deepEqual(L.compCarries(comp).map((u) => u.name), ["URSARING", "MIGHTYENA"]);
+  assert.deepEqual(L.compCarries(comp, 1).map((u) => u.name), ["URSARING"]);
+  assert.equal(L.compName(comp, L.makeTranslator({ pkm: { URSARING: "Ursaring" }, synergy: { WILD: "Salvaje" } })), "Ursaring Salvaje");
+  const noItems = { ...comp, units: comp.units.map((u) => ({ ...u, itemCount: 0 })) };
+  assert.deepEqual(L.compCarries(noItems).map((u) => u.name), ["MIGHTYENA"]);
+});
+
+test("synergyLevel da bronce, plata u oro", () => {
+  assert.equal(L.synergyLevel(1, [2, 4, 6, 9]), 0);
+  assert.equal(L.synergyLevel(2, [2, 4, 6, 9]), 1);
+  assert.equal(L.synergyLevel(4, [2, 4, 6, 9]), 2);
+  assert.equal(L.synergyLevel(6, [2, 4, 6, 9]), 2);
+  assert.equal(L.synergyLevel(9, [2, 4, 6, 9]), 3);
+  assert.equal(L.synergyLevel(3, [3, 5, 7]), 1);
+  assert.equal(L.synergyLevel(5, [3, 5, 7]), 2);
+  assert.equal(L.synergyLevel(7, [3, 5, 7]), 3);
+  assert.equal(L.synergyLevel(4, []), 0);
+});
+
+test("stageGroups reparte la primera etapa por rareza", () => {
+  assert.deepEqual(L.stageGroups(comps[0], pokedex, families), {
+    early: ["AIPOM", "RATTATA"],
+    mid: ["POOCHYENA"],
+    late: ["TEDDIURSA"],
+  });
+});
+
+test("playTip explica cómo empezar y el objetivo", () => {
+  assert.equal(
+    L.playTip(comps[0], triggers, tEs),
+    "Consigue 2 de Salvaje pronto para activarla. Objetivo: Salvaje 9 + Siniestro 3."
+  );
+  assert.equal(L.playTip({ synergies: {} }, triggers, tEs), "");
+});
+
+test("filterComps filtra por Pokémon y por sinergias", () => {
+  const t = L.makeTranslator();
+  const ids = (list) => list.map((c) => c.id);
+  assert.deepEqual(ids(L.filterComps(comps, {}, families, t)), ["1", "2"]);
+  assert.deepEqual(ids(L.filterComps(comps, { query: "poochy" }, families, t)), ["1"]);
+  assert.deepEqual(ids(L.filterComps(comps, { query: "URSA" }, families, t)), ["1", "2"]);
+  assert.deepEqual(ids(L.filterComps(comps, { synergies: new Set(["GROUND"]) }, families, t)), ["2"]);
+  assert.deepEqual(ids(L.filterComps(comps, { synergies: new Set(["GROUND", "WILD"]) }, families, t)), []);
+});
+
+test("cleanText traduce los términos del juego", () => {
+  const i18n = { stat: { SPEED: "Velocidad", ATK: "Ataque" }, technical_terms: { ADJACENT_IN_THE_SAME_ROW: "adyacentes en la misma fila" } };
+  assert.equal(
+    L.cleanText("Gana +20 SPEED y [25,LK]% de ATK con aliados ADJACENT_IN_THE_SAME_ROW. {{additionalInfo}}", i18n),
+    "Gana +20 velocidad y 25% de ataque con aliados adyacentes en la misma fila."
+  );
+  assert.equal(L.cleanText("Dura [3,5,7,10] s y aplica KO", i18n), "Dura 3/5/7/10 s y aplica KO");
+  assert.equal(L.cleanText(undefined, i18n), "");
+});
+
+test("itemTierList e itemTier ordenan los objetos", () => {
+  const list = L.itemTierList([
+    { name: "A", rank: 3.9, count: 500, pokemons: [] },
+    { name: "B", rank: 3.4, count: 300, pokemons: ["X"] },
+    { name: "C", rank: 2.0, count: 10, pokemons: [] },
+  ]);
+  assert.deepEqual(list.map((x) => x.name), ["B", "A"]);
+  assert.equal(L.itemTierList([{ name: "C", rank: 2, count: 10, pokemons: [] }], 5).length, 1);
+  assert.equal(L.itemTier(3.4), "S");
+  assert.equal(L.itemTier(3.7), "A");
+  assert.equal(L.itemTier(4.0), "B");
+  assert.equal(L.itemTier(4.5), "C");
 });

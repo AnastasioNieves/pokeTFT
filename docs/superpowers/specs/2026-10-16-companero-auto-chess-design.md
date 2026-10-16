@@ -138,6 +138,16 @@ README.md           cómo usarla y las normas que respeta
 | `synergyProgress(units, pokedex, triggers) → [{ type, count, thresholds, active }]` | Cuenta **familias distintas** por tipo (dos de la misma familia cuentan una vez), usando los tipos de la unidad. `active` = mayor umbral alcanzado o 0. Orden: `count` desc. |
 | `placementHint(unit, pokedex) → "front" \| "back"` | `range <= 1` → `"front"`; si no, `"back"`. |
 
+El plan de implementación añade varias funciones auxiliares puras con sus pruebas:
+
+- `normalizeComps` (filtra `count >= 50`);
+- `makeTranslator` y `humanize` (los `t.*` del `Dataset`);
+- `normalizeSearch` (para el buscador);
+- `placeBoard` (reparte el tablero desde el centro);
+- `compTitle` (nombre de la compo).
+
+`synergyProgress` recibe nombres de unidades (`string[]`).
+
 El progreso de sinergias se calcula con **las unidades de la compo que ya tienes**. La barra muestra además el objetivo de la compo (`comp.synergies[type]`).
 
 ### `src/ui.js` — `PAC.ui`

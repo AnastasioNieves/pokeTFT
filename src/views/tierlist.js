@@ -41,7 +41,7 @@
         .sort((a, b) => a.meanRank - b.meanRank);
     const firstVisible = visible()[0];
     const selected = (selectedKey && ctx.byKey(selectedKey)) || firstVisible || null;
-    const activeKey = selected ? L.compKey(selected) : null;
+    let activeKey = selected ? L.compKey(selected) : null;
 
     function drawSynBar() {
       synBar.replaceChildren(
@@ -69,13 +69,14 @@
     function row(comp) {
       const key = L.compKey(comp);
       const { core, flex } = L.splitCoreFlex(comp);
-      const name = L.compName(comp, ds.t);
+      const name = ctx.nameOf(comp);
       const tier = L.compTier(comp);
       return el(
         "button",
         {
           type: "button",
           class: "tl-row",
+          "data-key": key,
           "aria-current": key === activeKey ? "true" : null,
           "aria-label": name + ", tier " + tier + ", puesto medio " + dom.fmtRank(comp.meanRank),
           onclick: () => ctx.navigate("tier", key),
@@ -142,8 +143,29 @@
     drawList();
     list.scrollTop = ctx.tierScroll || 0;
 
-    if (selected) views.comp.render(detail, ctx, selected);
-    else detail.appendChild(el("p", { class: "muted empty", text: "Elige una compo de la lista." }));
+    function showDetail(comp) {
+      detail.replaceChildren();
+      if (comp) views.comp.render(detail, ctx, comp);
+      else detail.appendChild(el("p", { class: "muted empty", text: "Elige una compo de la lista." }));
+      detail.scrollTop = 0;
+    }
+
+    // Al cambiar de compo solo se repinta el detalle: la lista y el foco se mantienen.
+    ctx.tierSelect = (key) => {
+      const comp = (key && ctx.byKey(key)) || visible()[0] || null;
+      activeKey = comp ? L.compKey(comp) : null;
+      list.querySelectorAll(".tl-row").forEach((b) => {
+        if (b.dataset.key === activeKey) b.setAttribute("aria-current", "true");
+        else b.removeAttribute("aria-current");
+      });
+      showDetail(comp);
+      if (root.matchMedia && root.matchMedia("(max-width: 1200px)").matches) detail.scrollIntoView({ block: "start" });
+    };
+
+    showDetail(selected);
+    // Si se llega con una compo concreta (p. ej. desde Mi partida), que su fila quede a la vista.
+    const currentRow = list.querySelector('.tl-row[aria-current="true"]');
+    if (selectedKey && currentRow) currentRow.scrollIntoView({ block: "nearest" });
   }
 
   root.PAC = root.PAC || {};

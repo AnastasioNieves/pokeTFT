@@ -38,7 +38,7 @@
           el("tr", null, [
             el("td", null, [dom.tierBadge(L.itemTier(x.rank))]),
             el("td", null, [el("span", { class: "item-cell" }, [dom.itemIcon(x.name, ds, 32), el("strong", { text: ds.t.item(x.name) })])]),
-            el("td", { class: "small", text: ds.t.itemDesc(x.name) }),
+            el("td", { class: "small", text: ds.t.itemDesc(x.name) || "—" }),
             el("td", { class: "num", text: dom.fmtRank(x.rank) }),
             el("td", { class: "num", text: x.count.toLocaleString("es-ES") }),
             el("td", null, [el("span", { class: "holders" }, x.pokemons.filter((n) => ds.pokedex[n]).map((n) => dom.unit(n, ds, { size: 32 })))]),

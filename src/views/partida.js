@@ -70,9 +70,10 @@
       if (i >= 0) state.owned.splice(i, 1);
       else state.owned.push(family);
       ctx.save();
-      drawAll();
-      const again = container.querySelector('.fam[data-family="' + CSS.escape(family) + '"]');
-      if (again) again.focus();
+      const btn = grid.querySelector('.fam[data-family="' + CSS.escape(family) + '"]');
+      if (btn) btn.setAttribute("aria-pressed", state.owned.includes(family) ? "true" : "false");
+      drawChips();
+      drawRight();
     }
 
     function drawAll() {
@@ -154,7 +155,7 @@
                   [
                     dom.tierBadge(L.compTier(comp)),
                     el("span", { class: "tl-name" }, [
-                      el("strong", { text: L.compName(comp, ds.t) }),
+                      el("strong", { text: ctx.nameOf(comp) }),
                       el("span", {
                         class: "muted small",
                         text: (owned.size ? "Coincide " + dom.fmtPct(match) + " · " : "") + "Puesto " + dom.fmtRank(comp.meanRank),
@@ -195,7 +196,7 @@
       const sec = el("section", { class: "panel" }, [
         el("div", { class: "pt-detail-head" }, [
           dom.tierBadge(L.compTier(comp)),
-          el("h2", { text: L.compName(comp, ds.t) }),
+          el("h2", { text: ctx.nameOf(comp) }),
           el("a", { href: "#tier/" + encodeURIComponent(key), class: "small", text: "Ver guía completa" }),
         ]),
         el("h3", { class: "sub", text: missing.length ? "Te falta comprar" : "¡Ya tienes toda la compo!" }),

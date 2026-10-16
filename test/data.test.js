@@ -65,12 +65,12 @@ test("primera carga descarga las 6 fuentes y construye el Dataset", async () => 
   assert.equal(ds.t.synergy("WILD"), "Salvaje");
   assert.equal(ds.t.item("FLAME_ORB"), "Flame Orb");
   assert.deepEqual(storage.keys(), [
-    "pac.cache.v1.comps",
-    "pac.cache.v1.i18n",
-    "pac.cache.v1.items",
-    "pac.cache.v1.metadata",
-    "pac.cache.v1.pokedex",
-    "pac.cache.v1.triggers",
+    "pac.cache.v2.comps",
+    "pac.cache.v2.i18n",
+    "pac.cache.v2.items",
+    "pac.cache.v2.metadata",
+    "pac.cache.v2.pokedex",
+    "pac.cache.v2.triggers",
   ]);
   assert.deepEqual(ds.itemStats, [{ name: "DUSK_STONE", rank: 3.4, count: 500, pokemons: ["URSARING", "A", "B"] }]);
 });
@@ -78,11 +78,11 @@ test("primera carga descarga las 6 fuentes y construye el Dataset", async () => 
 test("la caché recorta campos que no se usan", async () => {
   const storage = memoryStorage();
   await D.createLoader({ fetch: fakeFetch(), storage, now: () => 0 }).load();
-  const comps = JSON.parse(storage.getItem("pac.cache.v1.comps")).body;
+  const comps = JSON.parse(storage.getItem("pac.cache.v2.comps")).body;
   assert.equal(comps[0].hull, undefined);
   assert.equal(comps[0].x, undefined);
   assert.equal(comps[0].cluster_id, "1");
-  const i18n = JSON.parse(storage.getItem("pac.cache.v1.i18n")).body;
+  const i18n = JSON.parse(storage.getItem("pac.cache.v2.i18n")).body;
   assert.deepEqual(Object.keys(i18n).sort(), [
     "damage",
     "item",
@@ -92,6 +92,7 @@ test("la caché recorta campos que no se usan", async () => {
     "status",
     "synergy",
     "technical_terms",
+    "weather",
   ]);
   assert.deepEqual(comps[0].top_teams, []);
   assert.deepEqual(comps[0].mean_items, []);

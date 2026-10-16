@@ -311,3 +311,34 @@ test("itemTierList e itemTier ordenan los objetos", () => {
   assert.equal(L.itemTier(4.0), "B");
   assert.equal(L.itemTier(4.5), "C");
 });
+
+test("normalizeComps da una clave única a compos con el mismo núcleo", () => {
+  const same = (id) => ({
+    cluster_id: id,
+    count: 60,
+    winrate: 10,
+    mean_rank: 4,
+    synergies: { wild: 2 },
+    mean_team: { pokemons: { MIGHTYENA: { frequency: 0.9, items: [] } } },
+  });
+  const list = L.normalizeComps([same("a"), same("b"), JSON.parse(fixture("comps.json"))[1]], pokedex);
+  assert.deepEqual(list.map((c) => L.compKey(c)), ["POOCHYENA~a", "POOCHYENA~b", "GIBLE+RHYHORN"]);
+});
+
+test("compNames desambigua nombres repetidos", () => {
+  const unit = { name: "URSARING", family: "TEDDIURSA", frequency: 1, items: [], itemCount: 2 };
+  const mk = (id, synergies) => ({ id, synergies, units: [unit] });
+  const t = L.makeTranslator();
+  const names = L.compNames([mk("a", { WILD: 9, DARK: 3 }), mk("b", { WILD: 9, GROUND: 2 }), mk("c", { WILD: 6, DARK: 3 }), mk("d", { FIRE: 2 })], t);
+  assert.deepEqual(names, {
+    a: "Ursaring Wild · Dark (a)",
+    b: "Ursaring Wild · Ground",
+    c: "Ursaring Wild · Dark (c)",
+    d: "Ursaring Fire",
+  });
+});
+
+test("cleanText traduce climas y nombres de objeto", () => {
+  const i18n = { weather: { SANDSTORM: "Tormenta de Arena" }, item: { WONDER_BOX: "Caja Maravilla" } };
+  assert.equal(L.cleanText("Con SANDSTORM, da una WONDER_BOX", i18n), "Con tormenta de arena, da una Caja Maravilla");
+});

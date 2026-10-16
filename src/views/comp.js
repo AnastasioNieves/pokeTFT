@@ -21,7 +21,7 @@
     const head = el("header", { class: "cv-head" }, [
       dom.tierBadge(L.compTier(comp), true),
       el("div", { class: "cv-title" }, [
-        el("h2", { text: L.compName(comp, ds.t) }),
+        el("h2", { text: ctx.nameOf(comp) }),
         el("div", { class: "cv-syns" }, dom.compSynergyBadges(comp, ds)),
       ]),
       el("dl", { class: "kpis" }, [

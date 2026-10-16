@@ -12,7 +12,15 @@
   }
 
   // Secciones del diccionario del juego donde buscar los términos en MAYÚSCULAS de las descripciones.
-  const TOKEN_SECTIONS = ["stat", "status", "technical_terms", "synergy", "damage"];
+  const TOKEN_SECTIONS = [
+    ["stat", true],
+    ["status", true],
+    ["technical_terms", true],
+    ["synergy", true],
+    ["damage", true],
+    ["weather", true],
+    ["item", false],
+  ];
 
   function cleanText(text, i18n) {
     const src = i18n || {};
@@ -26,9 +34,12 @@
           .join("/")
       )
       .replace(/\b[A-Z][A-Z_]+\b/g, (token) => {
-        for (const section of TOKEN_SECTIONS) {
+        for (const [section, lower] of TOKEN_SECTIONS) {
           const table = src[section];
-          if (table && typeof table[token] === "string") return table[token].trim().toLowerCase();
+          if (table && typeof table[token] === "string") {
+            const value = table[token].trim();
+            return lower ? value.toLowerCase() : value;
+          }
         }
         return token;
       })
@@ -186,10 +197,20 @@
 
   function normalizeComps(rawList, pokedex, opts) {
     const minCount = opts && opts.minCount != null ? opts.minCount : 50;
-    return (rawList || [])
+    const list = (rawList || [])
       .filter((r) => Number(r.count) >= minCount)
       .map((r) => normalizeComp(r, pokedex))
       .filter((c) => c.units.length > 0);
+    const uses = {};
+    list.forEach((c) => {
+      const base = compKey(c);
+      uses[base] = (uses[base] || 0) + 1;
+    });
+    list.forEach((c) => {
+      const base = compKey(c);
+      c.key = uses[base] > 1 ? base + "~" + c.id : base;
+    });
+    return list;
   }
 
   function scoreComp(comp, owned) {
@@ -399,8 +420,10 @@
     return out.sort((a, b) => a - b);
   }
 
-  // Clave estable entre informes: familias del núcleo ordenadas.
+  // Clave estable entre informes: familias del núcleo ordenadas. Si dos compos la comparten,
+  // normalizeComps les añade "~<id>" (comp.key) para que cada una tenga la suya.
   function compKey(comp) {
+    if (comp.key) return comp.key;
     const families = splitCoreFlex(comp).core.map((u) => u.family).sort();
     return families.length ? families.join("+") : "comp-" + comp.id;
   }
@@ -425,6 +448,31 @@
     if (!carry) return compTitle(comp, t, 2);
     const first = Object.keys(comp.synergies)[0];
     return first ? t.pkm(carry.name) + " " + t.synergy(first) : t.pkm(carry.name);
+  }
+
+  // Nombre único por compo: si se repite, añade la segunda sinergia; si aún se repite, el id.
+  function compNames(comps, t) {
+    const tally = (map) => {
+      const n = {};
+      Object.values(map).forEach((v) => {
+        n[v] = (n[v] || 0) + 1;
+      });
+      return n;
+    };
+    const out = {};
+    comps.forEach((c) => {
+      out[c.id] = compName(c, t);
+    });
+    const first = tally(out);
+    comps.forEach((c) => {
+      const second = Object.keys(c.synergies)[1];
+      if (first[out[c.id]] > 1 && second) out[c.id] += " · " + t.synergy(second);
+    });
+    const again = tally(out);
+    comps.forEach((c) => {
+      if (again[out[c.id]] > 1) out[c.id] += " (" + c.id + ")";
+    });
+    return out;
   }
 
   function synergyLevel(count, thresholds) {
@@ -532,6 +580,7 @@
     compTier,
     compCarries,
     compName,
+    compNames,
     synergyLevel,
     stageGroups,
     playTip,

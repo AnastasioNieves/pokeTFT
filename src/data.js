@@ -3,7 +3,8 @@
   "use strict";
 
   const DAY = 24 * 60 * 60 * 1000;
-  const CACHE_PREFIX = "pac.cache.v1.";
+  const CACHE_PREFIX = "pac.cache.v2.";
+  const OLD_PREFIXES = ["pac.cache.v1."];
   const GAME = "https://pokemon-auto-chess.com";
   const REPO = "https://raw.githubusercontent.com/keldaanCommunity/pokemonAutoChess/master";
 
@@ -36,7 +37,7 @@
       url: REPO + "/app/public/dist/client/locales/es/translation.json",
       kind: "json",
       trim: (o) => {
-        const keep = ["pkm", "item", "synergy", "item_description", "stat", "status", "technical_terms", "damage"];
+        const keep = ["pkm", "item", "synergy", "item_description", "stat", "status", "technical_terms", "damage", "weather"];
         const out = {};
         keep.forEach((k) => {
           out[k] = (o && o[k]) || {};
@@ -175,8 +176,21 @@
     }
   }
 
+  function dropOldCache(storage) {
+    try {
+      for (let i = storage.length - 1; i >= 0; i--) {
+        const k = storage.key(i);
+        if (k && OLD_PREFIXES.some((p) => k.startsWith(p))) storage.removeItem(k);
+      }
+    } catch (e) {
+      // Sin permiso: no pasa nada.
+    }
+  }
+
   function load(opts) {
-    return createLoader({ fetch: root.fetch.bind(root), storage: browserStorage() }).load(opts);
+    const storage = browserStorage();
+    if (storage) dropOldCache(storage);
+    return createLoader({ fetch: root.fetch.bind(root), storage }).load(opts);
   }
 
   const api = { SOURCES, DataError, createLoader, buildDataset, load };

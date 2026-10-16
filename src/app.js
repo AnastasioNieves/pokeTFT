@@ -35,7 +35,14 @@
     const raw = (root.location.hash || "").replace(/^#/, "");
     const slash = raw.indexOf("/");
     const view = slash === -1 ? raw : raw.slice(0, slash);
-    const arg = slash === -1 ? null : decodeURIComponent(raw.slice(slash + 1)) || null;
+    let arg = null;
+    if (slash !== -1) {
+      try {
+        arg = decodeURIComponent(raw.slice(slash + 1)) || null;
+      } catch (e) {
+        arg = null;
+      }
+    }
     const known = TABS.map((t) => t[0]);
     return { view: known.includes(view) ? view : "tier", arg };
   }
@@ -52,6 +59,12 @@
   function render() {
     if (!current) return;
     const route = parseRoute();
+    if (route.view === "tier" && current.lastView === "tier" && current.tierSelect) {
+      current.tierSelect(route.arg);
+      return;
+    }
+    current.lastView = route.view;
+    current.tierSelect = null;
     renderTabs(route.view);
     const view = $("#view");
     view.replaceChildren();
@@ -75,6 +88,8 @@
       },
       byKey: (key) => ds.comps.find((c) => logic.compKey(c) === key) || null,
     };
+    const names = logic.compNames(ds.comps, ds.t);
+    current.nameOf = (comp) => names[comp.id] || logic.compName(comp, ds.t);
     $("#report").textContent =
       (ds.reportDate ? "Informe del " + dom.fmtDate(ds.reportDate) + " · " : "") + ds.comps.length + " compos";
     const notice = $("#notice");

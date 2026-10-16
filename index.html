@@ -10,48 +10,35 @@
 <header class="top">
   <div class="brand">
     <h1>Compañero Auto Chess</h1>
-    <span id="report" class="muted"></span>
+    <span id="report" class="muted small"></span>
   </div>
+  <nav id="tabs" class="tabs" aria-label="Secciones"></nav>
   <p id="notice" class="notice" hidden></p>
-  <div class="actions">
-    <button id="btn-refresh" type="button">Actualizar datos</button>
-    <button id="btn-reset" type="button" class="danger">Nueva partida</button>
-  </div>
+  <button id="btn-refresh" type="button" class="btn">Actualizar datos</button>
 </header>
 
-<main class="cols">
-  <section class="panel" aria-labelledby="h-owned">
-    <h2 id="h-owned">Mis Pokémon</h2>
-    <input id="search" type="search" placeholder="Buscar Pokémon…" autocomplete="off" aria-label="Buscar Pokémon">
-    <div id="owned-chips" class="chips" aria-live="polite"></div>
-    <div id="family-grid" class="fam-grid"></div>
-  </section>
-  <section class="panel" aria-labelledby="h-suggest">
-    <h2 id="h-suggest">Compos sugeridas</h2>
-    <p id="suggest-hint" class="hint muted" hidden>Las mejores del meta. Marca tus Pokémon para ver cuál te encaja más.</p>
-    <ol id="suggestions" class="suggestions"></ol>
-  </section>
-  <section class="panel" aria-labelledby="h-comp">
-    <h2 id="h-comp">Mi compo</h2>
-    <div id="comp-detail"></div>
-  </section>
-</main>
+<main id="view" class="view"></main>
 
 <div id="loading" class="overlay-msg" role="status">Cargando datos del meta…</div>
 <div id="error" class="overlay-msg" role="alert" hidden>
   <p id="error-text"></p>
-  <button id="btn-retry" type="button">Reintentar</button>
+  <button id="btn-retry" type="button" class="btn">Reintentar</button>
 </div>
 
 <footer class="foot">
   Herramienta no oficial. No lee ni modifica el juego. ·
-  Datos: informe público del meta de pokemon-auto-chess.com y el código abierto del juego · Retratos: PMD Sprite Collab
+  Datos: informe público del meta de pokemon-auto-chess.com y el código abierto del juego · Imágenes: repositorio del juego y PMD Sprite Collab
 </footer>
 
 <script src="src/logic.js"></script>
 <script src="src/data.js"></script>
+<script src="src/dom.js"></script>
 <script src="src/board.js"></script>
-<script src="src/ui.js"></script>
+<script src="src/views/comp.js"></script>
+<script src="src/views/tierlist.js"></script>
+<script src="src/views/partida.js"></script>
+<script src="src/views/items.js"></script>
+<script src="src/app.js"></script>
 <script src="src/main.js"></script>
 </body>
 </html>

@@ -53,7 +53,7 @@
   }
 
   function render(container, ctx) {
-    const { boardKey, units, ds, el, portrait } = ctx;
+    const { boardKey, units, ds, el, portrait, piece } = ctx;
     const L = logic();
     container.replaceChildren();
     if (units.length === 0) {
@@ -134,6 +134,9 @@
                 "data-index": String(i),
                 "aria-label": rowName + ", columna " + (c + 1) + ": " + (name ? ds.t.pkm(name) : "vacía"),
                 "aria-pressed": i === selected ? "true" : "false",
+                title: name
+                  ? (board.reasons[name] || []).map((code) => reasonText(code, name, ds)).filter(Boolean).join(" ")
+                  : null,
                 draggable: name ? "true" : null,
                 onclick: () => onCell(i),
                 ondragstart: (e) => {
@@ -148,7 +151,7 @@
                   if (Number.isInteger(from) && from >= 0 && from < L.BOARD_SIZE && cells[from]) move(from, i);
                 },
               },
-              name ? [portrait(name, ds, 56)] : []
+              name ? [piece ? piece(name) : portrait(name, ds, 56)] : []
             )
           );
         }

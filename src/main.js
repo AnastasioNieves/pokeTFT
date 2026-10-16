@@ -11,7 +11,7 @@
       .load({ force })
       .then((ds) => {
         $("#loading").hidden = true;
-        root.PAC.ui.mount(ds, { onRefresh: () => start(true) });
+        root.PAC.app.mount(ds, { onRefresh: () => start(true) });
       })
       .catch((err) => {
         $("#loading").hidden = true;

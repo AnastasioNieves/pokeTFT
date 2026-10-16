@@ -54,7 +54,8 @@
         stage: Number(r.Tier) || 1,
         types: [r["Type 1"], r["Type 2"], r["Type 3"], r["Type 4"]].filter(Boolean),
         range: Number(r["Attack Range"]) || 1,
-        portrait: String(r.Index).replace("-", "/"),
+        portrait: String(r.Index).replace(/-/g, "/"),
+        variant: r.Variant === "true",
       };
     });
     const families = {};
@@ -78,9 +79,11 @@
   }
 
   function finalStage(names, pokedex) {
+    const main = names.filter((name) => pokedex[name] && !pokedex[name].variant);
+    const pool = main.length ? main : names;
     let best;
     let bestStage = -1;
-    names.forEach((name) => {
+    pool.forEach((name) => {
       const stage = pokedex[name] ? pokedex[name].stage : 0;
       if (stage > bestStage) {
         best = name;
@@ -102,15 +105,28 @@
         synergies[k] = syn[k];
       });
     const mons = (raw.mean_team && raw.mean_team.pokemons) || {};
-    const units = Object.keys(mons)
+    const byFamily = {};
+    Object.keys(mons)
       .filter((name) => pokedex[name])
-      .map((name) => ({
-        name,
-        family: pokedex[name].family,
-        frequency: Number(mons[name].frequency) || 0,
-        items: Array.isArray(mons[name].items) ? mons[name].items.slice() : [],
-      }))
-      .sort((a, b) => b.frequency - a.frequency || (a.name < b.name ? -1 : 1));
+      .forEach((name) => {
+        const unit = {
+          name,
+          family: pokedex[name].family,
+          frequency: Number(mons[name].frequency) || 0,
+          items: Array.isArray(mons[name].items) ? mons[name].items.slice() : [],
+        };
+        const prev = byFamily[unit.family];
+        if (
+          !prev ||
+          unit.frequency > prev.frequency ||
+          (unit.frequency === prev.frequency && pokedex[name].stage > pokedex[prev.name].stage)
+        ) {
+          byFamily[unit.family] = unit;
+        }
+      });
+    const units = Object.values(byFamily).sort(
+      (a, b) => b.frequency - a.frequency || (a.name < b.name ? -1 : 1)
+    );
     return {
       id: String(raw.cluster_id),
       count: Number(raw.count) || 0,

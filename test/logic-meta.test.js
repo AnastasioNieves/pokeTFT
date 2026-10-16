@@ -93,3 +93,27 @@ test("compTitle une las sinergias principales traducidas", () => {
   assert.equal(L.compTitle(comps[0], t), "Salvaje · Siniestro");
   assert.equal(L.compTitle(comps[0], t, 1), "Salvaje");
 });
+
+test("normalizeComp deja una unidad por familia", () => {
+  const raw = {
+    cluster_id: "9",
+    count: 60,
+    winrate: 10,
+    mean_rank: 4,
+    synergies: { dragon: 3 },
+    mean_team: {
+      pokemons: {
+        GIBLE: { frequency: 0.3, items: [] },
+        GABITE: { frequency: 0.7, items: ["WONDER_BOX"] },
+        GARCHOMP: { frequency: 0.7, items: ["SOUL_DEW"] },
+        RHYDON: { frequency: 0.5, items: [] },
+      },
+    },
+  };
+  const comp = L.normalizeComp(raw, pokedex);
+  assert.deepEqual(
+    comp.units.map((u) => [u.name, u.frequency]),
+    [["GARCHOMP", 0.7], ["RHYDON", 0.5]]
+  );
+  assert.deepEqual(comp.units[0].items, ["SOUL_DEW"]);
+});

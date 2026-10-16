@@ -34,30 +34,38 @@
   ];
 
   class DataError extends Error {
-    constructor(source, cause) {
-      super("No se pudo descargar: " + source);
+    constructor(source, cause, kind) {
+      super((kind === "format" ? "Formato inesperado: " : "No se pudo descargar: ") + source);
       this.name = "DataError";
       this.source = source;
       this.cause = cause;
+      this.kind = kind || "network";
     }
   }
 
   const logic = () => root.PAC.logic;
 
   function buildDataset(by) {
-    const L = logic();
-    const built = L.buildPokedex(L.parseCsv(by.pokedex.body));
-    const meta = by.metadata.body;
-    const created = Array.isArray(meta) && meta[0] && meta[0].created_at;
-    return {
-      reportDate: created ? String(created).slice(0, 10) : null,
-      stale: Object.keys(by).some((k) => by[k].stale),
-      pokedex: built.pokedex,
-      families: built.families,
-      triggers: by.triggers.body || {},
-      comps: L.normalizeComps(by.comps.body, built.pokedex, { minCount: 50 }),
-      t: L.makeTranslator(by.i18n.body),
-    };
+    let dataset;
+    try {
+      const L = logic();
+      const built = L.buildPokedex(L.parseCsv(by.pokedex.body));
+      const meta = by.metadata.body;
+      const created = Array.isArray(meta) && meta[0] && meta[0].created_at;
+      dataset = {
+        reportDate: created ? String(created).slice(0, 10) : null,
+        stale: Object.keys(by).some((k) => by[k].stale),
+        pokedex: built.pokedex,
+        families: built.families,
+        triggers: by.triggers.body || {},
+        comps: L.normalizeComps(by.comps.body, built.pokedex, { minCount: 50 }),
+        t: L.makeTranslator(by.i18n.body),
+      };
+    } catch (err) {
+      throw new DataError("datos", err, "format");
+    }
+    if (dataset.comps.length === 0) throw new DataError("comps", null, "format");
+    return dataset;
   }
 
   function createLoader(deps) {

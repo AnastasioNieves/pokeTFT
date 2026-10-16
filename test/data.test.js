@@ -129,3 +129,20 @@ test("funciona aunque el almacenamiento lance errores", async () => {
   const ds2 = await D.createLoader({ fetch: fakeFetch(), storage: null, now: () => 0 }).load();
   assert.equal(ds2.comps.length, 2);
 });
+
+test("un meta sin compos falla como formato inesperado", async () => {
+  const fetch = (url) => {
+    const src = D.SOURCES.find((s) => s.url === url);
+    const body = src.key === "comps" ? { error: "x" } : bodies[src.key];
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(JSON.parse(JSON.stringify(body))),
+      text: () => Promise.resolve(body),
+    });
+  };
+  await assert.rejects(
+    D.createLoader({ fetch, storage: memoryStorage(), now: () => 0 }).load(),
+    (err) => err instanceof D.DataError && err.kind === "format" && err.source === "comps"
+  );
+});

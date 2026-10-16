@@ -28,6 +28,7 @@
   </section>
   <section class="panel" aria-labelledby="h-suggest">
     <h2 id="h-suggest">Compos sugeridas</h2>
+    <p id="suggest-hint" class="hint muted" hidden>Las mejores del meta. Marca tus Pokémon para ver cuál te encaja más.</p>
     <ol id="suggestions" class="suggestions"></ol>
   </section>
   <section class="panel" aria-labelledby="h-comp">
@@ -36,8 +37,8 @@
   </section>
 </main>
 
-<div id="loading" class="overlay-msg">Cargando datos del meta…</div>
-<div id="error" class="overlay-msg" hidden>
+<div id="loading" class="overlay-msg" role="status">Cargando datos del meta…</div>
+<div id="error" class="overlay-msg" role="alert" hidden>
   <p id="error-text"></p>
   <button id="btn-retry" type="button">Reintentar</button>
 </div>

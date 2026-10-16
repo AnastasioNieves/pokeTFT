@@ -10,6 +10,8 @@
   --accent-soft: #f6dde0;
   --good: #2e7a4d;
   --good-soft: #dcefe3;
+  --on-good: #ffffff;
+  --on-accent: #ffffff;
   --radius: 10px;
   --font: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
   color-scheme: light;
@@ -26,6 +28,8 @@
     --accent-soft: #3d1c21;
     --good: #6cc391;
     --good-soft: #1d3326;
+    --on-good: #141112;
+    --on-accent: #141112;
     color-scheme: dark;
   }
 }
@@ -92,7 +96,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); ou
 .portrait.fallback { font-weight: 700; font-size: 0.8rem; color: var(--muted); }
 
 .suggestions { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.suggestions .hint { font-size: 0.88rem; }
+.hint { font-size: 0.88rem; margin: 0; }
 .sugg {
   width: 100%; text-align: left; display: grid; gap: 4px; padding: 10px 12px;
   border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
@@ -119,7 +123,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); ou
 .unit-meta { font-size: 0.8rem; }
 .status { font-size: 0.78rem; font-weight: 700; border-radius: 6px; padding: 1px 7px; }
 .status.have { color: var(--good); }
-.status.buy { background: var(--accent); color: #fff; }
+.status.buy { background: var(--accent); color: var(--on-accent); }
 .status.buy small { font-weight: 600; }
 .items { display: flex; flex-wrap: wrap; gap: 4px; }
 .item { font-size: 0.78rem; border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; background: var(--surface); }
@@ -130,7 +134,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); ou
 .syn-count { font-variant-numeric: tabular-nums; color: var(--muted); }
 .pips { display: flex; gap: 4px; flex-wrap: wrap; }
 .pip { min-width: 26px; text-align: center; border-radius: 6px; padding: 1px 4px; font-size: 0.8rem; font-weight: 700; background: var(--sunk); color: var(--muted); }
-.pip.on { background: var(--good); color: #fff; }
+.pip.on { background: var(--good); color: var(--on-good); }
 .pip.goal { box-shadow: inset 0 0 0 2px var(--accent); }
 
 .board { display: grid; gap: 4px; padding: 10px; border-radius: 8px; background: var(--bg); overflow-x: auto; }

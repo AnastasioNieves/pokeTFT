@@ -51,7 +51,7 @@
   const initials = (s) =>
     s.split(/\s+/).map((w) => w.charAt(0)).join("").slice(0, 2).toUpperCase();
 
-  function portrait(name, ds, size) {
+  function portrait(name, ds, size, decorative) {
     const px = size || 40;
     const label = ds.t.pkm(name);
     const p = ds.pokedex[name];
@@ -104,10 +104,6 @@
   function mount(ds, opts) {
     const state = loadState();
     const entries = familyEntries(ds);
-    const known = new Set(entries.map((e) => e.family));
-    state.owned = state.owned.filter((f) => known.has(f));
-    if (state.compId && !ds.comps.some((c) => c.id === state.compId)) state.compId = null;
-    saveState(state);
     const ui = { ds, state, entries, query: "" };
 
     $("#report").textContent =
@@ -161,7 +157,8 @@
     }
     ui.state.owned.forEach((family) => {
       const entry = ui.entries.find((e) => e.family === family);
-      const label = entry ? entry.label : family;
+      if (!entry) return;
+      const label = entry.label;
       box.appendChild(
         el("button", { type: "button", class: "chip", "aria-label": "Quitar " + label, onclick: () => toggle(ui, family) }, [
           label,
@@ -192,7 +189,7 @@
             title: e.names.map((n) => ui.ds.t.pkm(n)).join(" → "),
             onclick: () => toggle(ui, e.family),
           },
-          [portrait(e.display, ui.ds, 48), el("span", { class: "fam-name", text: e.label })]
+          [portrait(e.display, ui.ds, 48, true), el("span", { class: "fam-name", text: e.label })]
         )
       );
     });
@@ -203,11 +200,7 @@
     const list = $("#suggestions");
     list.replaceChildren();
     const owned = new Set(ui.state.owned);
-    if (owned.size === 0) {
-      list.appendChild(
-        el("li", { class: "hint muted", text: "Las mejores del meta. Marca tus Pokémon para ver cuál te encaja más." })
-      );
-    }
+    $("#suggest-hint").hidden = owned.size !== 0;
     L.rankComps(ui.ds.comps, owned, { limit: 5 }).forEach(({ comp, match }) => {
       const core = L.splitCoreFlex(comp).core.slice(0, 6);
       list.appendChild(
@@ -281,7 +274,7 @@
                 base !== u.name ? el("small", { text: " (sale como " + ds.t.pkm(base) + ")" }) : null,
               ]);
           return el("li", { class: "unit" + (have ? " is-owned" : "") }, [
-            portrait(u.name, ds, 44),
+            portrait(u.name, ds, 44, true),
             el("div", { class: "unit-body" }, [
               el("div", { class: "unit-head" }, [el("strong", { text: ds.t.pkm(u.name) }), status]),
               el("div", { class: "unit-meta muted", text: "En el " + fmtPct(u.frequency) + " de los equipos" }),

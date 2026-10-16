@@ -42,6 +42,7 @@ test("buildPokedex crea fichas y familias ordenadas por etapa", () => {
     types: ["WILD", "DARK"],
     range: 1,
     portrait: "0262",
+    variant: false,
   });
   assert.equal(pokedex.ALOLAN_RATICATE.portrait, "0020/0001");
   assert.equal(pokedex.ABRA.range, 4);
@@ -74,4 +75,17 @@ test("buildPokedex pone la forma base antes que la alternativa y finalStage la e
   assert.equal(L.finalStage(families.TEDDIURSA, pokedex), "URSALUNA");
   assert.equal(L.finalStage(["NOPE", "TEDDIURSA"], pokedex), "TEDDIURSA");
   assert.equal(L.finalStage([], pokedex), undefined);
+});
+
+test("buildPokedex convierte todos los guiones del índice y marca variantes", () => {
+  const header =
+    "Index,Name,Category,Tier,Additional pick,Type 1,Type 2,Type 3,Type 4,HP,Attack,Speed,Defense,Special Defense,Attack Range,Max PP,Ability,Family,Family Type 1,Family Type 2,Family Type 3,Family Type 4,Duo,Regional,Nb stages,Variant";
+  const row = (index, name, tier, variant) =>
+    [index, name, "UNIQUE", tier, "false", "PSYCHIC", "GHOST", "", "", 1, 1, 1, 1, 1, 1, 100, "X", "HOOPA", "", "", "", "", "false", "false", 1, variant].join(",");
+  const csv = [header, row("0720", "HOOPA", 3, "false"), row("0720-0001-0000-0002", "HOOPA_UNBOUND", 4, "true")].join("\n");
+  const { pokedex, families } = L.buildPokedex(L.parseCsv(csv));
+  assert.equal(pokedex.HOOPA_UNBOUND.portrait, "0720/0001/0000/0002");
+  assert.equal(pokedex.HOOPA_UNBOUND.variant, true);
+  assert.equal(pokedex.HOOPA.variant, false);
+  assert.equal(L.finalStage(families.HOOPA, pokedex), "HOOPA");
 });
